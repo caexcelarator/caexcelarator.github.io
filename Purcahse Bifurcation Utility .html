@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Tally Purchase GST Converter – Rate Wise</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+body { font-family: Arial; margin: 20px; }
+table { border-collapse: collapse; margin-top: 10px; }
+th, td { border: 1px solid #ccc; padding: 6px; }
+select, input, button { margin: 5px; }
+.remove { color:red; cursor:pointer; font-weight:bold; }
+#progress { height:20px; background:#4caf50; width:0%; }
+#progressWrap { background:#eee; width:100%; }
+</style>
+</head>
+
+<body>
+
+<h2>Purchase Day Book → GST Rate-Wise Converter (v2.1)</h2>
+
+<input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
+Header Row:
+<input type="number" id="headerRow" value="1" min="1">
+<button onclick="loadFile()">Load File</button>
+
+<p><b>Status:</b> <span id="status">Waiting</span></p>
+<div id="progressWrap"><div id="progress"></div></div>
+
+<hr>
+
+<h3>Header Mapping</h3>
+<table>
+<tr><td>Date</td><td><select id="dateCol"></select></td></tr>
+<tr><td>Voucher No</td><td><select id="voucherCol"></select></td></tr>
+<tr><td>Party</td><td><select id="partyCol"></select></td></tr>
+<tr><td>GSTIN</td><td><select id="gstinCol"></select></td></tr>
+</table>
+
+<h3>Taxable Mapping</h3>
+<table id="taxableMap">
+<tr><th>Column</th><th>GST Rate %</th><th>✖</th></tr>
+</table>
+<button onclick="addTaxable()">Add Taxable</button>
+
+<h3>Tax Mapping</h3>
+<table id="taxMap">
+<tr><th>Column</th><th>Tax Type</th><th>GST Rate %</th><th>✖</th></tr>
+</table>
+<button onclick="addTax()">Add Tax</button>
+
+<br>
+<button onclick="processData()">Process</button>
+<button onclick="exportExcel()">Export Excel</button>
+
+<h3>Output</h3>
+<table id="output"></table>
+
+<script>
+let rawData=[], headers=[], selectedFile=null, outputData=[];
+const statusEl = document.getElementById("status");
+const progressEl = document.getElementById("progress");
+
+fileInput.onchange = e => selectedFile = e.target.files[0];
+
+function setStatus(msg,pct){
+  statusEl.innerText = msg;
+  progressEl.style.width = pct + "%";
+}
+
+function loadFile(){
+  if(!selectedFile) return alert("Select file first");
+  setStatus("Loading file…",5);
+
+  const r = new FileReader();
+  r.onload = e=>{
+    const wb = XLSX.read(e.target.result,{type:'binary'});
+    const sh = wb.Sheets[wb.SheetNames[0]];
+    rawData = XLSX.utils.sheet_to_json(sh,{
+      defval:0,
+      range:Number(headerRow.value)-1
+    });
+    headers = Object.keys(rawData[0]||{});
+    fillDropdowns();
+    setStatus("File loaded",10);
+  };
+  r.readAsBinaryString(selectedFile);
+}
+
+function fillDropdowns(){
+  ["dateCol","voucherCol","partyCol","gstinCol"].forEach(id=>{
+    document.getElementById(id).innerHTML =
+      headers.map(h=>`<option>${h}</option>`).join("");
+  });
+}
+
+function addTaxable(){
+  taxableMap.insertAdjacentHTML("beforeend",`
+  <tr>
+    <td><select>${headers.map(h=>`<option>${h}</option>`).join("")}</select></td>
+    <td><input type="number"></td>
+    <td class="remove" onclick="this.parentElement.remove()">✖</td>
+  </tr>`);
+}
+
+function addTax(){
+  taxMap.insertAdjacentHTML("beforeend",`
+  <tr>
+    <td><select>${headers.map(h=>`<option>${h}</option>`).join("")}</select></td>
+    <td>
+      <select>
+        <option>CGST</option>
+        <option>SGST</option>
+        <option>IGST</option>
+      </select>
+    </td>
+    <td><input type="number"></td>
+    <td class="remove" onclick="this.parentElement.remove()">✖</td>
+  </tr>`);
+}
+
+function processData(){
+  setStatus("Processing…",10);
+  const vouchers = {};
+  let i=0, total=rawData.length;
+
+  function chunk(){
+    for(let c=0;c<50 && i<total;c++,i++){
+      const r = rawData[i];
+      const vno = r[voucherCol.value];
+      if(!vno) continue;
+
+      if(!vouchers[vno]){
+        vouchers[vno]={
+          date:r[dateCol.value],
+          party:r[partyCol.value],
+          gstin:r[gstinCol.value],
+          rates:{}
+        };
+      }
+
+      // Taxable
+      document.querySelectorAll("#taxableMap tr").forEach((tr,j)=>{
+        if(j===0) return;
+        const col = tr.children[0].children[0].value;
+        const rate = tr.children[1].children[0].value;
+        const val = Number(r[col]||0);
+        if(val === 0) return;
+
+        if(!vouchers[vno].rates[rate])
+          vouchers[vno].rates[rate]={taxable:0,CGST:0,SGST:0,IGST:0};
+        vouchers[vno].rates[rate].taxable += val;
+      });
+
+      // Tax
+      document.querySelectorAll("#taxMap tr").forEach((tr,j)=>{
+        if(j===0) return;
+        const col = tr.children[0].children[0].value;
+        const type = tr.children[1].children[0].value;
+        const rate = tr.children[2].children[0].value;
+        const val = Number(r[col]||0);
+        if(val === 0) return;
+
+        if(!vouchers[vno].rates[rate])
+          vouchers[vno].rates[rate]={taxable:0,CGST:0,SGST:0,IGST:0};
+        vouchers[vno].rates[rate][type] += val;
+      });
+    }
+
+    setStatus(`Processing ${i}/${total}`,10+(i/total)*80);
+    if(i<total) setTimeout(chunk,0);
+    else buildOutput(vouchers);
+  }
+  chunk();
+}
+
+function buildOutput(vouchers){
+  outputData=[];
+  let sr=1;
+
+  Object.keys(vouchers).forEach(vno=>{
+    const v = vouchers[vno];
+    Object.keys(v.rates).forEach(rate=>{
+      const r=v.rates[rate];
+
+      // ✅ FINAL SAFETY CHECK — NO BLANK ROWS
+      if(r.taxable===0 && r.CGST===0 && r.SGST===0 && r.IGST===0) return;
+
+      outputData.push({
+        "Sr No":sr++,
+        "Voucher No":vno,
+        "Date":v.date,
+        "Party":v.party,
+        "GSTIN":v.gstin,
+        "GST Rate %":rate,
+        "Taxable":r.taxable,
+        "CGST":r.CGST,
+        "SGST":r.SGST,
+        "IGST":r.IGST,
+        "Total Tax":r.CGST+r.SGST+r.IGST
+      });
+    });
+  });
+
+  render();
+  setStatus("Completed ✔",100);
+}
+
+function render(){
+  output.innerHTML="";
+  if(!outputData.length) return;
+  const cols=Object.keys(outputData[0]);
+  output.innerHTML+=`<tr>${cols.map(c=>`<th>${c}</th>`).join("")}</tr>`;
+  outputData.forEach(r=>{
+    output.innerHTML+=`<tr>${cols.map(c=>`<td>${r[c]}</td>`).join("")}</tr>`;
+  });
+}
+
+function exportExcel(){
+  if(!outputData.length) return alert("No data");
+  const ws=XLSX.utils.json_to_sheet(outputData);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,"GST_Ratewise");
+  XLSX.writeFile(wb,"Purchase_GST_Ratewise.xlsx");
+}
+</script>
+
+</body>
+</html>
