@@ -1,266 +1,312 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Loan Moratorium Calculator</title>
-
-<style>
-body { font-family: Arial, sans-serif; background:#f4f6f8; padding:20px; }
-.container { background:#fff; padding:20px; border-radius:8px; max-width:1200px; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
-.row { display:flex; gap:15px; margin-bottom:12px; }
-.row label { flex:1; font-size:14px; }
-.row input, .row select { width:100%; padding:6px; }
-button { padding:10px 16px; background:#2b7cff; color:#fff; border:none; border-radius:6px; cursor:pointer; }
-button.export { background:#28a745; margin-left:10px; }
-button.tab { background:#6c757d; margin-right:5px; }
-button.active { background:#2b7cff; }
-table { width:100%; border-collapse:collapse; margin-top:15px; }
-th, td { border:1px solid #ccc; padding:6px; text-align:right; font-size:13px; }
-th { background:#f0f0f0; text-align:center; }
-.tabcontent { display:none; }
-
-.kpis { display:flex; gap:15px; margin:15px 0; }
-.kpi {
-  flex:1; background:#f8f9fa; padding:14px; border-radius:8px;
-  text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.12);
-}
-.kpi span { font-size:12px; color:#555; }
-.kpi b { font-size:18px; color:#2b7cff; display:block; margin-top:6px; }
-
-.moratorium { background:#fff3cd; }
-.emi { background:#eafaf1; }
-.last { background:#e3f2fd; font-weight:bold; }
-</style>
+  <meta charset="UTF-8" />
+  <title>Loan Moratorium Calculator</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f4f6f8; padding:20px; }
+    h2 { margin-bottom:10px; }
+    .container { background:#fff; padding:20px; border-radius:8px; max-width:1150px; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
+    .row { display:flex; gap:15px; margin-bottom:12px; }
+    .row label { flex:1; font-size:14px; }
+    .row input, .row select { width:100%; padding:6px; }
+    button { padding:10px 16px; background:#2b7cff; color:#fff; border:none; border-radius:6px; cursor:pointer; }
+    button.export { background:#28a745; margin-left:10px; }
+    button.tab { background:#6c757d; margin-right:5px; }
+    button.active { background:#2b7cff; }
+    table { width:100%; border-collapse:collapse; margin-top:15px; }
+    th, td { border:1px solid #ccc; padding:6px; text-align:right; font-size:13px; }
+    th { background:#f0f0f0; text-align:center; }
+    .tabcontent { display:none; }
+  </style>
 </head>
 
 <body>
 <div class="container">
+  <h2>Loan Moratorium Calculator</h2>
 
-<h2>Loan Moratorium Calculator</h2>
+  <!-- UNIT CONVERSION -->
+  <div class="row">
+    <label>Display Amounts In
+      <select id="unitSelect" onchange="renderTables()">
+        <option value="1">Normal</option>
+        <option value="100">Hundreds</option>
+        <option value="1000">Thousands</option>
+        <option value="100000">Lakhs</option>
+        <option value="10000000">Crores</option>
+      </select>
+    </label>
+  </div>
 
-<!-- KPI YEAR FILTER -->
-<div class="row">
-  <label>View Summary For
-    <select id="yearSelect" onchange="updateKPIs()">
-      <option value="ALL">Overall (All Years)</option>
-    </select>
-  </label>
-</div>
+  <div class="row">
+    <label>Client Name <input type="text" id="clientName" /></label>
+    <label>Bank Name <input type="text" id="bankName" /></label>
+    <label>Loan A/c No <input type="text" id="loanAcc" /></label>
+  </div>
 
-<!-- KPI CARDS -->
-<div class="kpis">
-  <div class="kpi"><span>Loan Amount</span><b id="kpiLoan">0.00</b></div>
-  <div class="kpi"><span>Total Interest Paid</span><b id="kpiInterest">0.00</b></div>
-  <div class="kpi"><span>Total EMI Paid</span><b id="kpiEMI">0.00</b></div>
-</div>
+  <div class="row">
+    <label>Sanction Date <input type="date" id="sanctionDate" /></label>
+    <label>EMI Start Date <input type="date" id="emiStartDate" /></label>
+    <label>Loan Amount <input type="number" id="principal" /></label>
+  </div>
 
-<!-- INPUTS -->
-<div class="row">
-  <label>Client Name <input id="clientName"></label>
-  <label>Bank Name <input id="bankName"></label>
-  <label>Loan A/c No <input id="loanAcc"></label>
-</div>
+  <div class="row">
+    <label>Rate of Interest (% p.a.) <input type="number" step="0.01" id="roi" /></label>
+    <label>Tenure (Months) <input type="number" id="tenureMonths" /></label>
+    <label>Moratorium (Months) <input type="number" id="moratorium" /></label>
+  </div>
 
-<div class="row">
-  <label>Sanction Date <input type="date" id="sanctionDate"></label>
-  <label>EMI Start Date <input type="date" id="emiStartDate"></label>
-  <label>Loan Amount <input type="number" id="principal"></label>
-</div>
+  <div class="row">
+    <label>Moratorium Type
+      <select id="moratoriumType">
+        <option value="pay">Pay Interest During Moratorium</option>
+        <option value="add">Add Interest to Principal</option>
+      </select>
+    </label>
+  </div>
 
-<div class="row">
-  <label>Rate (% p.a.) <input type="number" step="0.01" id="roi"></label>
-  <label>Tenure (Months) <input type="number" id="tenureMonths"></label>
-  <label>Moratorium (Months) <input type="number" id="moratorium"></label>
-</div>
+  <button onclick="calculate()">Generate Schedule</button>
+  <button class="export" onclick="exportToExcel()">Export Monthly</button>
 
-<div class="row">
-  <label>Moratorium Type
-    <select id="moratoriumType">
-      <option value="pay">Pay Interest</option>
-      <option value="add">Add to Principal</option>
-    </select>
-  </label>
+  <hr />
 
-  <label>Display Amounts In
-    <select id="unitSelect" onchange="renderTables();updateKPIs();">
-      <option value="1">Actual</option>
-      <option value="100">Hundreds</option>
-      <option value="1000">Thousands</option>
-      <option value="100000">Lakhs</option>
-    </select>
-  </label>
-</div>
+  <button class="tab active" onclick="openTab(event,'monthly')">Monthly Schedule</button>
+  <button class="tab" onclick="openTab(event,'fy')">Financial Year Summary</button>
 
-<button onclick="calculate()">Generate Schedule</button>
-<button class="export" onclick="exportToExcel()">Export Monthly</button>
+  <!-- MONTHLY -->
+  <div id="monthly" class="tabcontent" style="display:block;">
+    <table id="resultTable">
+      <thead>
+        <tr>
+          <th>Month No</th>
+          <th>Month</th>
+          <th>Year</th>
+          <th>Opening Principal</th>
+          <th>Interest Accrued</th>
+          <th>Interest Paid</th>
+          <th>Principal Paid</th>
+          <th>EMI Paid</th>
+          <th>Closing Principal</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
-<hr>
-
-<button class="tab active" onclick="openTab(event,'monthly')">Monthly</button>
-<button class="tab" onclick="openTab(event,'fy')">FY Summary</button>
-
-<!-- MONTHLY -->
-<div id="monthly" class="tabcontent" style="display:block;">
-<table id="resultTable">
-<thead>
-<tr>
-<th>Month</th><th>Year</th><th>Opening</th>
-<th>Interest Paid</th><th>Principal Paid</th>
-<th>EMI Paid</th><th>Closing</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
-</div>
-
-<!-- FY -->
-<div id="fy" class="tabcontent">
-<button class="export" onclick="exportFYToExcel()">Export FY Summary</button>
-<table id="fyTable">
-<thead>
-<tr>
-<th>FY</th><th>Opening</th><th>Interest Paid</th>
-<th>Principal Paid</th><th>EMI Paid</th><th>Closing</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
-</div>
-
+  <!-- FY -->
+  <div id="fy" class="tabcontent">
+    <button class="export" onclick="exportFYToExcel()">Export FY Summary</button>
+    <table id="fyTable">
+      <thead>
+        <tr>
+          <th>Financial Year</th>
+          <th>Opening Principal</th>
+          <th>Interest Accrued</th>
+          <th>Interest Paid</th>
+          <th>Principal Paid</th>
+          <th>EMI Paid</th>
+          <th>Closing Principal</th>
+          <th>Short Term (Next 12M)</th>
+          <th>Long Term</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 </div>
 
 <script>
 let scheduleData = [];
-let fyMap = {};
 
-function openTab(e,t){
-  document.querySelectorAll('.tabcontent').forEach(d=>d.style.display='none');
-  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
-  document.getElementById(t).style.display='block';
-  e.target.classList.add('active');
+function openTab(evt, tab) {
+  document.querySelectorAll('.tabcontent').forEach(t => t.style.display='none');
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  document.getElementById(tab).style.display='block';
+  evt.target.classList.add('active');
 }
 
-function format(v){
-  const u = +unitSelect.value || 1;
-  return (v/u).toFixed(2);
+function format(v) {
+  const unit = parseFloat(document.getElementById('unitSelect').value);
+  return (v / unit).toFixed(2);
 }
 
-function calculate(){
-  scheduleData=[]; fyMap={};
+function calculate() {
+  const P = parseFloat(principal.value);
+  const annualRate = parseFloat(roi.value);
+  const tenure = parseInt(tenureMonths.value);
+  const mor = parseInt(moratorium.value) || 0;
+  const type = moratoriumType.value;
+  const sanc = sanctionDate.value;
+  const emiVal = emiStartDate.value;
 
-  const P=+principal.value;
-  const r=+roi.value/1200;
-  const t=+tenureMonths.value;
-  const m=+moratorium.value||0;
-  let bal=P;
-  let d=new Date(emiStartDate.value);
+  if (!P || !annualRate || !tenure || !emiVal) {
+    alert('Please fill Loan Amount, Rate, Tenure and EMI Start Date');
+    return;
+  }
 
-  let temp=P;
-  if(moratoriumType.value==='add')
-    for(let i=0;i<m;i++) temp+=temp*r;
+  if (sanc && sanc > emiVal) {
+    alert('Sanction Date cannot be later than EMI Start Date');
+    return;
+  }
 
-  const EMI=(temp*r*Math.pow(1+r,t-m))/(Math.pow(1+r,t-m)-1);
+  if (mor > tenure) {
+    alert('Moratorium cannot exceed tenure');
+    return;
+  }
 
-  for(let i=0;i<t;i++){
-    let intPaid=bal*r, prin=0;
-    if(i>=m){ prin=EMI-intPaid; bal-=prin; }
+  const rate = annualRate / 12 / 100;
+  scheduleData = [];
+  let bal = P;
+
+  const emiStart = new Date(emiVal);
+
+  let tempBal = bal;
+  if (type === 'add') {
+    for (let i = 0; i < mor; i++) tempBal += tempBal * rate;
+  }
+
+  const remTen = tenure - mor;
+  const EMI = remTen > 0
+    ? (tempBal * rate * Math.pow(1 + rate, remTen)) / (Math.pow(1 + rate, remTen) - 1)
+    : 0;
+
+  const tbody = document.querySelector('#resultTable tbody');
+  tbody.innerHTML = '';
+
+  for (let i = 0; i < tenure; i++) {
+    const opening = bal;
+    const interestAcc = opening * rate;
+    let interestPaid = 0;
+    let principalPaid = 0;
+
+    if (i < mor) {
+      if (type === 'pay') interestPaid = interestAcc;
+      else bal += interestAcc;
+    } else {
+      interestPaid = interestAcc;
+      principalPaid = EMI - interestAcc;
+      bal -= principalPaid;
+    }
+
+    const emiPaid = interestPaid + principalPaid;
+
+    const d = new Date(emiStart);
+    d.setMonth(d.getMonth() + i);
+
     scheduleData.push({
-      date:new Date(d), open:bal+prin,
-      intPaid, prin, emi:intPaid+prin, close:bal
+      date: d, opening, interestAcc,
+      interestPaid, principalPaid,
+      emiPaid, closing: bal
     });
-    d.setMonth(d.getMonth()+1);
-  }
-  renderTables();
-}
 
-function renderTables(){
-  const tb=document.querySelector('#resultTable tbody');
-  tb.innerHTML='';
-  scheduleData.forEach(r=>{
-    tb.innerHTML+=`<tr>
-      <td>${r.date.toLocaleString('default',{month:'short'})}</td>
-      <td>${r.date.getFullYear()}</td>
-      <td>${format(r.open)}</td>
-      <td>${format(r.intPaid)}</td>
-      <td>${format(r.prin)}</td>
-      <td>${format(r.emi)}</td>
-      <td>${format(r.close)}</td>
+    tbody.innerHTML += `<tr>
+      <td>${i + 1}</td>
+      <td>${d.toLocaleString('default', { month: 'long' })}</td>
+      <td>${d.getFullYear()}</td>
+      <td>${format(opening)}</td>
+      <td>${format(interestAcc)}</td>
+      <td>${format(interestPaid)}</td>
+      <td>${format(principalPaid)}</td>
+      <td>${format(emiPaid)}</td>
+      <td>${format(bal)}</td>
     </tr>`;
-  });
+  }
+
   buildFY();
-  updateKPIs();
 }
 
-function buildFY(){
-  fyMap={};
-  scheduleData.forEach(r=>{
-    const y=r.date.getMonth()<3?r.date.getFullYear()-1:r.date.getFullYear();
-    const fy=y+'-'+(y+1);
-    if(!fyMap[fy]) fyMap[fy]={open:r.open,int:0,prin:0,emi:0,close:r.close};
-    fyMap[fy].int+=r.intPaid;
-    fyMap[fy].prin+=r.prin;
-    fyMap[fy].emi+=r.emi;
-    fyMap[fy].close=r.close;
+function renderTables() {
+  const tbody = document.querySelector('#resultTable tbody');
+  tbody.innerHTML = '';
+
+  scheduleData.forEach((r, i) => {
+    tbody.innerHTML += `<tr>
+      <td>${i + 1}</td>
+      <td>${r.date.toLocaleString('default', { month: 'long' })}</td>
+      <td>${r.date.getFullYear()}</td>
+      <td>${format(r.opening)}</td>
+      <td>${format(r.interestAcc)}</td>
+      <td>${format(r.interestPaid)}</td>
+      <td>${format(r.principalPaid)}</td>
+      <td>${format(r.emiPaid)}</td>
+      <td>${format(r.closing)}</td>
+    </tr>`;
   });
 
-  yearSelect.innerHTML='<option value="ALL">Overall (All Years)</option>';
-  Object.keys(fyMap).forEach(fy=>{
-    yearSelect.innerHTML+=`<option value="${fy}">${fy}</option>`;
+  buildFY();
+}
+
+function buildFY() {
+  const fyMap = {};
+  scheduleData.forEach((r, idx) => {
+    const y = r.date.getMonth() < 3 ? r.date.getFullYear() - 1 : r.date.getFullYear();
+    const fy = y + '-' + (y + 1);
+
+    if (!fyMap[fy]) {
+      fyMap[fy] = {
+        open: r.opening, intAcc: 0, intPaid: 0,
+        prin: 0, emi: 0, close: r.closing, endIndex: idx
+      };
+    }
+
+    fyMap[fy].intAcc += r.interestAcc;
+    fyMap[fy].intPaid += r.interestPaid;
+    fyMap[fy].prin += r.principalPaid;
+    fyMap[fy].emi += r.emiPaid;
+    fyMap[fy].close = r.closing;
+    fyMap[fy].endIndex = idx;
   });
 
-  const tb=document.querySelector('#fyTable tbody');
-  tb.innerHTML='';
-  Object.entries(fyMap).forEach(([fy,r])=>{
-    tb.innerHTML+=`<tr>
+  const tbody = document.querySelector('#fyTable tbody');
+  tbody.innerHTML = '';
+
+  Object.keys(fyMap).sort().forEach(fy => {
+    const row = fyMap[fy];
+    let shortTerm = 0;
+
+    for (let i = row.endIndex + 1; i < row.endIndex + 13 && i < scheduleData.length; i++) {
+      shortTerm += scheduleData[i].principalPaid;
+    }
+
+    const longTerm = row.close - shortTerm;
+
+    tbody.innerHTML += `<tr>
       <td>${fy}</td>
-      <td>${format(r.open)}</td>
-      <td>${format(r.int)}</td>
-      <td>${format(r.prin)}</td>
-      <td>${format(r.emi)}</td>
-      <td>${format(r.close)}</td>
+      <td>${format(row.open)}</td>
+      <td>${format(row.intAcc)}</td>
+      <td>${format(row.intPaid)}</td>
+      <td>${format(row.prin)}</td>
+      <td>${format(row.emi)}</td>
+      <td>${format(row.close)}</td>
+      <td>${format(shortTerm)}</td>
+      <td>${format(longTerm)}</td>
     </tr>`;
   });
 }
 
-function updateKPIs(){
-  const fy=yearSelect.value;
-  let open=0,int=0,emi=0;
-  if(fy==='ALL'){
-    open=scheduleData[0]?.open||0;
-    scheduleData.forEach(r=>{int+=r.intPaid; emi+=r.emi;});
-  }else{
-    open=fyMap[fy].open;
-    int=fyMap[fy].int;
-    emi=fyMap[fy].emi;
-  }
-  kpiLoan.innerText=format(open);
-  kpiInterest.innerText=format(int);
-  kpiEMI.innerText=format(emi);
-}
+function exportToExcel() { exportWithHeader('resultTable', 'Monthly_Schedule'); }
+function exportFYToExcel() { exportWithHeader('fyTable', 'FY_Summary'); }
 
-/* EXPORTS — RESTORED */
-function exportToExcel(){ exportWithHeader('resultTable','Monthly_Schedule'); }
-function exportFYToExcel(){ exportWithHeader('fyTable','FY_Summary'); }
-
-function exportWithHeader(id,name){
-  const csv=[];
-  csv.push('Client Name,'+clientName.value);
-  csv.push('Bank Name,'+bankName.value);
-  csv.push('Loan A/c No,'+loanAcc.value);
+function exportWithHeader(id, name) {
+  const csv = [];
+  csv.push('Client Name,' + clientName.value);
+  csv.push('Bank Name,' + bankName.value);
+  csv.push('Loan A/c No,' + loanAcc.value);
   csv.push('');
-  const t=document.getElementById(id);
-  for(let r of t.rows){
-    const row=[];
-    for(let c of r.cells) row.push('"'+c.innerText+'"');
+
+  const t = document.getElementById(id);
+  for (let r of t.rows) {
+    const row = [];
+    for (let c of r.cells) row.push('"' + c.innerText + '"');
     csv.push(row.join(','));
   }
-  const blob=new Blob([csv.join('\n')],{type:'text/csv'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download=name+'.csv';
+
+  const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name + '.csv';
   a.click();
 }
 </script>
-
 </body>
 </html>
