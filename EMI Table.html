@@ -1,60 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <title>Loan Moratorium Calculator</title>
 
 <style>
-body { font-family: Arial, sans-serif; background:#f4f6f8; padding:20px; }
-.container { background:#fff; padding:20px; border-radius:8px; max-width:1200px; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
-.row { display:flex; gap:15px; margin-bottom:12px; }
-.row label { flex:1; font-size:14px; }
-.row input, .row select { width:100%; padding:6px; }
-button { padding:10px 16px; background:#2b7cff; color:#fff; border:none; border-radius:6px; cursor:pointer; }
-button.export { background:#28a745; margin-left:10px; }
-button.tab { background:#6c757d; margin-right:5px; }
-button.active { background:#2b7cff; }
-table { width:100%; border-collapse:collapse; margin-top:15px; }
-th, td { border:1px solid #ccc; padding:6px; text-align:right; font-size:13px; }
-th { background:#f0f0f0; text-align:center; }
-.tabcontent { display:none; }
-
-.kpis { display:flex; gap:15px; margin:15px 0; }
-.kpi {
-  flex:1;
-  background:#f8f9fa;
-  padding:14px;
-  border-radius:8px;
-  text-align:center;
-  box-shadow:0 1px 4px rgba(0,0,0,0.08);
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+  padding: 20px;
 }
-.kpi span { font-size:12px; color:#555; }
-.kpi b { font-size:18px; color:#2b7cff; display:block; margin-top:5px; }
+.container {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 1200px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 12px;
+}
+.row label {
+  flex: 1;
+  font-size: 14px;
+}
+.row input, .row select {
+  width: 100%;
+  padding: 6px;
+}
+button {
+  padding: 10px 16px;
+  background: #2b7cff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+button.export {
+  background: #28a745;
+  margin-left: 10px;
+}
+button.tab {
+  background: #6c757d;
+  margin-right: 5px;
+}
+button.active {
+  background: #2b7cff;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+th, td {
+  border: 1px solid #ccc;
+  padding: 6px;
+  text-align: right;
+  font-size: 13px;
+}
+th {
+  background: #f0f0f0;
+  text-align: center;
+}
+.tabcontent {
+  display: none;
+}
 
-.moratorium { background:#fff3cd; }
-.emi { background:#eafaf1; }
-.last { background:#e3f2fd; font-weight:bold; }
+/* KPI STYLES — IMPORTANT */
+.kpis {
+  display: flex;
+  gap: 15px;
+  margin: 15px 0 20px 0;
+}
+.kpi {
+  flex: 1;
+  background: #f8f9fa;
+  padding: 14px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  min-height: 70px;
+}
+.kpi span {
+  font-size: 12px;
+  color: #555;
+}
+.kpi b {
+  font-size: 20px;
+  color: #2b7cff;
+  display: block;
+  margin-top: 6px;
+}
+
+.moratorium { background: #fff3cd; }
+.emi { background: #eafaf1; }
+.last { background: #e3f2fd; font-weight: bold; }
 </style>
 </head>
 
 <body>
 <div class="container">
+
 <h2>Loan Moratorium Calculator</h2>
 
-<!-- KPI YEAR SELECT -->
+<!-- KPI YEAR DROPDOWN -->
 <div class="row">
-  <label>View Summary For
+  <label>
+    View Summary For
     <select id="yearSelect" onchange="updateKPIs()">
       <option value="ALL">Overall (All Years)</option>
     </select>
   </label>
 </div>
 
-<!-- KPI CARDS -->
-<div class="kpis">
-  <div class="kpi"><span>Loan Amount</span><b id="kpiLoan">-</b></div>
-  <div class="kpi"><span>Total Interest Paid</span><b id="kpiInterest">-</b></div>
-  <div class="kpi"><span>Total EMI Paid</span><b id="kpiEMI">-</b></div>
+<!-- KPI CARDS (ALWAYS VISIBLE) -->
+<div class="kpis" id="kpiSection">
+  <div class="kpi">
+    <span>Loan Amount</span>
+    <b id="kpiLoan">0.00</b>
+  </div>
+  <div class="kpi">
+    <span>Total Interest Paid</span>
+    <b id="kpiInterest">0.00</b>
+  </div>
+  <div class="kpi">
+    <span>Total EMI Paid</span>
+    <b id="kpiEMI">0.00</b>
+  </div>
 </div>
 
 <!-- INPUTS -->
@@ -95,7 +169,6 @@ th { background:#f0f0f0; text-align:center; }
 </div>
 
 <button onclick="calculate()">Generate Schedule</button>
-<button class="export" onclick="exportToExcel()">Export Monthly</button>
 
 <hr>
 
@@ -107,8 +180,13 @@ th { background:#f0f0f0; text-align:center; }
 <table id="resultTable">
 <thead>
 <tr>
-<th>Month</th><th>Year</th><th>Opening</th><th>Interest</th>
-<th>Interest Paid</th><th>Principal Paid</th><th>EMI Paid</th><th>Closing</th>
+<th>Month</th>
+<th>Year</th>
+<th>Opening</th>
+<th>Interest Paid</th>
+<th>Principal Paid</th>
+<th>EMI Paid</th>
+<th>Closing</th>
 </tr>
 </thead>
 <tbody></tbody>
@@ -120,112 +198,145 @@ th { background:#f0f0f0; text-align:center; }
 <table id="fyTable">
 <thead>
 <tr>
-<th>FY</th><th>Opening</th><th>Interest Paid</th>
-<th>Principal Paid</th><th>EMI Paid</th><th>Closing</th>
+<th>FY</th>
+<th>Opening</th>
+<th>Interest Paid</th>
+<th>EMI Paid</th>
+<th>Closing</th>
 </tr>
 </thead>
 <tbody></tbody>
 </table>
 </div>
+
 </div>
 
 <script>
 let scheduleData = [];
-let fyMapGlobal = {};
+let fyMap = {};
 
-function openTab(e,t){
-document.querySelectorAll('.tabcontent').forEach(x=>x.style.display='none');
-document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-document.getElementById(t).style.display='block';
-e.target.classList.add('active');
+function openTab(e, tab) {
+  document.querySelectorAll('.tabcontent').forEach(d => d.style.display = 'none');
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  document.getElementById(tab).style.display = 'block';
+  e.target.classList.add('active');
 }
 
-function format(v){
-const u=+unitSelect.value||1;
-return (v/u).toFixed(2);
+function format(v) {
+  const u = +unitSelect.value || 1;
+  return (v / u).toFixed(2);
 }
 
-function calculate(){
-scheduleData=[]; fyMapGlobal={};
-const P=+principal.value, r=+roi.value/1200, t=+tenureMonths.value, m=+moratorium.value||0;
-let bal=P; let d=new Date(emiStartDate.value);
+function calculate() {
+  scheduleData = [];
+  fyMap = {};
 
-let temp=P;
-if(moratoriumType.value==='add')for(let i=0;i<m;i++)temp+=temp*r;
-const EMI=(temp*r*Math.pow(1+r,t-m))/(Math.pow(1+r,t-m)-1);
+  const P = +principal.value;
+  const rate = +roi.value / 1200;
+  const tenure = +tenureMonths.value;
+  const mor = +moratorium.value || 0;
+  let bal = P;
+  let d = new Date(emiStartDate.value);
 
-for(let i=0;i<t;i++){
-let open=bal,intAcc=open*r,intPaid=0,prin=0;
-if(i<m){ if(moratoriumType.value==='pay')intPaid=intAcc; else bal+=intAcc; }
-else{ intPaid=intAcc; prin=EMI-intAcc; bal-=prin; }
-scheduleData.push({date:new Date(d),open,intPaid,prin,emi:intPaid+prin,close:bal});
-d.setMonth(d.getMonth()+1);
-}
-renderTables();
-}
+  let temp = P;
+  if (moratoriumType.value === 'add')
+    for (let i = 0; i < mor; i++) temp += temp * rate;
 
-function renderTables(){
-const tb=document.querySelector('#resultTable tbody');
-tb.innerHTML='';
-scheduleData.forEach((r,i)=>{
-tb.innerHTML+=`<tr class="${r.prin==0?'moratorium':'emi'}">
-<td>${r.date.toLocaleString('default',{month:'short'})}</td>
-<td>${r.date.getFullYear()}</td>
-<td>${format(r.open)}</td>
-<td>${format(r.intPaid+r.prin)}</td>
-<td>${format(r.intPaid)}</td>
-<td>${format(r.prin)}</td>
-<td>${format(r.emi)}</td>
-<td>${format(r.close)}</td>
-</tr>`;
-});
-buildFY();
-updateKPIs();
-}
+  const EMI = (temp * rate * Math.pow(1 + rate, tenure - mor)) /
+              (Math.pow(1 + rate, tenure - mor) - 1);
 
-function buildFY(){
-fyMapGlobal={};
-scheduleData.forEach((r,i)=>{
-const y=r.date.getMonth()<3?r.date.getFullYear()-1:r.date.getFullYear();
-const fy=y+'-'+(y+1);
-if(!fyMapGlobal[fy])fyMapGlobal[fy]={open:r.open,int:0,emi:0,close:r.close};
-fyMapGlobal[fy].int+=r.intPaid;
-fyMapGlobal[fy].emi+=r.emi;
-fyMapGlobal[fy].close=r.close;
-});
+  for (let i = 0; i < tenure; i++) {
+    let intPaid = bal * rate;
+    let prin = 0;
 
-yearSelect.innerHTML='<option value="ALL">Overall (All Years)</option>';
-Object.keys(fyMapGlobal).forEach(fy=>{
-yearSelect.innerHTML+=`<option value="${fy}">${fy}</option>`;
-});
+    if (i >= mor) {
+      prin = EMI - intPaid;
+      bal -= prin;
+    }
 
-const tb=document.querySelector('#fyTable tbody');
-tb.innerHTML='';
-Object.entries(fyMapGlobal).forEach(([fy,r])=>{
-tb.innerHTML+=`<tr>
-<td>${fy}</td><td>${format(r.open)}</td>
-<td>${format(r.int)}</td><td>${format(r.emi)}</td>
-<td>${format(r.emi)}</td><td>${format(r.close)}</td>
-</tr>`;
-});
+    scheduleData.push({
+      date: new Date(d),
+      open: bal + prin,
+      intPaid,
+      prin,
+      emi: intPaid + prin,
+      close: bal
+    });
+
+    d.setMonth(d.getMonth() + 1);
+  }
+
+  renderTables();
 }
 
-function updateKPIs(){
-const fy=yearSelect.value,u=+unitSelect.value||1;
-let open=0,int=0,emi=0;
-if(fy==='ALL'){
-open=scheduleData[0]?.open||0;
-scheduleData.forEach(r=>{int+=r.intPaid; emi+=r.emi;});
-}else{
-const r=fyMapGlobal[fy]; if(!r)return;
-open=r.open; int=r.int; emi=r.emi;
-}
-kpiLoan.innerText=(open/u).toFixed(2);
-kpiInterest.innerText=(int/u).toFixed(2);
-kpiEMI.innerText=(emi/u).toFixed(2);
+function renderTables() {
+  const tb = document.querySelector('#resultTable tbody');
+  tb.innerHTML = '';
+
+  scheduleData.forEach(r => {
+    tb.innerHTML += `<tr>
+      <td>${r.date.toLocaleString('default',{month:'short'})}</td>
+      <td>${r.date.getFullYear()}</td>
+      <td>${format(r.open)}</td>
+      <td>${format(r.intPaid)}</td>
+      <td>${format(r.prin)}</td>
+      <td>${format(r.emi)}</td>
+      <td>${format(r.close)}</td>
+    </tr>`;
+  });
+
+  buildFY();
+  updateKPIs();
 }
 
-function exportToExcel(){ alert('Export unchanged (visual only)'); }
+function buildFY() {
+  fyMap = {};
+  scheduleData.forEach(r => {
+    const y = r.date.getMonth() < 3 ? r.date.getFullYear() - 1 : r.date.getFullYear();
+    const fy = y + '-' + (y + 1);
+    if (!fyMap[fy]) fyMap[fy] = { open: r.open, int: 0, emi: 0, close: r.close };
+    fyMap[fy].int += r.intPaid;
+    fyMap[fy].emi += r.emi;
+    fyMap[fy].close = r.close;
+  });
+
+  yearSelect.innerHTML = '<option value="ALL">Overall (All Years)</option>';
+  Object.keys(fyMap).forEach(fy => {
+    yearSelect.innerHTML += `<option value="${fy}">${fy}</option>`;
+  });
+
+  const tb = document.querySelector('#fyTable tbody');
+  tb.innerHTML = '';
+  Object.entries(fyMap).forEach(([fy,r]) => {
+    tb.innerHTML += `<tr>
+      <td>${fy}</td>
+      <td>${format(r.open)}</td>
+      <td>${format(r.int)}</td>
+      <td>${format(r.emi)}</td>
+      <td>${format(r.close)}</td>
+    </tr>`;
+  });
+}
+
+function updateKPIs() {
+  const fy = yearSelect.value;
+  const u = +unitSelect.value || 1;
+  let open = 0, int = 0, emi = 0;
+
+  if (fy === 'ALL') {
+    open = scheduleData[0]?.open || 0;
+    scheduleData.forEach(r => { int += r.intPaid; emi += r.emi; });
+  } else {
+    open = fyMap[fy].open;
+    int = fyMap[fy].int;
+    emi = fyMap[fy].emi;
+  }
+
+  kpiLoan.innerText = (open / u).toFixed(2);
+  kpiInterest.innerText = (int / u).toFixed(2);
+  kpiEMI.innerText = (emi / u).toFixed(2);
+}
 </script>
+
 </body>
 </html>
