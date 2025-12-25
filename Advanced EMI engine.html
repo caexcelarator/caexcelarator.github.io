@@ -6,17 +6,19 @@
 
 <style>
 body { font-family: Arial; background:#f4f6f8; padding:20px; }
-.container { background:#fff; padding:20px; border-radius:8px; max-width:1500px; }
+.container { background:#fff; padding:20px; border-radius:8px; max-width:1600px; }
 h2,h3 { margin-top:0; }
 .row { display:flex; gap:15px; margin-bottom:10px; }
 .row label { flex:1; font-size:14px; }
 input, select { width:100%; padding:6px; }
 button { padding:6px 12px; background:#2b7cff; color:#fff; border:none; border-radius:4px; cursor:pointer; }
 button.export { background:#28a745; }
+button.delete { background:#dc3545; }
 table { width:100%; border-collapse:collapse; margin-top:10px; }
 th,td { border:1px solid #ccc; padding:6px; font-size:13px; text-align:right; }
 th { background:#eee; text-align:center; }
 .tab { margin-right:5px; }
+.small { font-size:12px; color:#555; }
 </style>
 </head>
 
@@ -50,8 +52,8 @@ th { background:#eee; text-align:center; }
 <div class="row">
   <label>Moratorium Type
     <select id="morType">
-      <option value="pay">Pay Interest</option>
-      <option value="add">Add Interest</option>
+      <option value="pay">Pay Interest During Moratorium</option>
+      <option value="add">Add Interest to Principal</option>
     </select>
   </label>
 
@@ -65,6 +67,55 @@ th { background:#eee; text-align:center; }
     </select>
   </label>
 </div>
+
+<hr>
+
+<!-- DISBURSEMENTS -->
+<h3>Disbursements</h3>
+<div class="row">
+  <label>Date <input type="date" id="disbDate"></label>
+  <label>Amount <input type="number" id="disbAmt"></label>
+  <label><button onclick="addDisb()">Add</button></label>
+</div>
+
+<table>
+<thead><tr><th>Date</th><th>Amount</th><th>Action</th></tr></thead>
+<tbody id="disbBody"></tbody>
+</table>
+
+<hr>
+
+<!-- PREPAYMENTS -->
+<h3>One-time Prepayments</h3>
+<div class="row">
+  <label>Date <input type="date" id="prepDate"></label>
+  <label>Amount <input type="number" id="prepAmt"></label>
+  <label><button onclick="addPrep()">Add</button></label>
+</div>
+
+<table>
+<thead><tr><th>Date</th><th>Amount</th><th>Action</th></tr></thead>
+<tbody id="prepBody"></tbody>
+</table>
+
+<hr>
+
+<!-- RECURRING -->
+<h3>Recurring Extra Payments</h3>
+<div class="row">
+  <label>Amount <input type="number" id="recAmt"></label>
+  <label>Frequency
+    <select id="recFreq">
+      <option value="">None</option>
+      <option value="1">Monthly</option>
+      <option value="3">Quarterly</option>
+      <option value="6">Half-Yearly</option>
+      <option value="12">Yearly</option>
+    </select>
+  </label>
+  <label>Start Date <input type="date" id="recStart"></label>
+</div>
+<p class="small">Recurring payments reduce principal in addition to EMI.</p>
 
 <hr>
 
@@ -82,12 +133,14 @@ th { background:#eee; text-align:center; }
 <table id="monthlyTable">
 <thead>
 <tr>
-<th>Month</th>
+<th>#</th>
 <th>Period</th>
 <th>Opening</th>
+<th>Disb.</th>
 <th>Interest</th>
 <th>Interest Paid</th>
 <th>Principal Paid</th>
+<th>Extra Pay</th>
 <th>EMI</th>
 <th>Closing</th>
 </tr>
@@ -118,7 +171,7 @@ th { background:#eee; text-align:center; }
 </div>
 
 <script>
-let monthlyData=[], fyData=[];
+let disbs=[], preps=[], monthlyData=[], fyData=[];
 
 function openTab(t){
   monthlyTab.style.display = t==='monthly'?'block':'none';
@@ -126,8 +179,8 @@ function openTab(t){
 }
 
 function fmt(v){
-  const div=+unitSelect.value;
-  return (v/div).toFixed(2);
+  const d=+unitSelect.value;
+  return (v/d).toFixed(2);
 }
 
 function period(d){
@@ -135,6 +188,30 @@ function period(d){
   return m[d.getMonth()]+'-'+d.getFullYear();
 }
 
+/* ---- DISBURSEMENTS ---- */
+function addDisb(){
+  if(!disbDate.value||!disbAmt.value) return;
+  disbs.push({d:disbDate.value,a:+disbAmt.value});
+  renderList(disbBody,disbs);
+}
+function addPrep(){
+  if(!prepDate.value||!prepAmt.value) return;
+  preps.push({d:prepDate.value,a:+prepAmt.value});
+  renderList(prepBody,preps);
+}
+function renderList(body,arr){
+  body.innerHTML='';
+  arr.forEach((x,i)=>{
+    body.innerHTML+=`
+    <tr>
+      <td><input type="date" value="${x.d}" onchange="arr[${i}].d=this.value"></td>
+      <td><input type="number" value="${x.a}" onchange="arr[${i}].a=+this.value"></td>
+      <td><button class="delete" onclick="arr.splice(${i},1);renderList(${body.id},arr)">X</button></td>
+    </tr>`;
+  });
+}
+
+/* ---- CORE ENGINE ---- */
 function generate(){
   monthlyData=[]; fyData=[];
   const rate=roi.value/1200;
@@ -143,8 +220,25 @@ function generate(){
   const type=morType.value;
   let bal=0;
 
+  /* expand recurring */
+  let allPreps=[...preps];
+  if(recAmt.value && recFreq.value && recStart.value){
+    let d=new Date(recStart.value);
+    let end=new Date(emiStart.value); end.setMonth(end.getMonth()+months);
+    while(d<end){
+      allPreps.push({d:d.toISOString().slice(0,10),a:+recAmt.value});
+      d.setMonth(d.getMonth()+ +recFreq.value);
+    }
+  }
+
   for(let i=0;i<months;i++){
     let d=new Date(emiStart.value); d.setMonth(d.getMonth()+i);
+
+    let disb=0, prep=0;
+    disbs.forEach(x=>{ if(new Date(x.d).getMonth()==d.getMonth()&&new Date(x.d).getFullYear()==d.getFullYear()) disb+=x.a; });
+    allPreps.forEach(x=>{ if(new Date(x.d).getMonth()==d.getMonth()&&new Date(x.d).getFullYear()==d.getFullYear()) prep+=x.a; });
+
+    bal+=disb;
     let opening=bal;
     let interest=bal*rate;
     let intPaid=0, prinPaid=0, emi=0;
@@ -152,15 +246,17 @@ function generate(){
     if(i<mor){
       if(type==='pay') intPaid=interest;
       else bal+=interest;
+      bal-=prep;
     } else {
       let rem=months-i;
-      emi=(bal*rate*Math.pow(1+rate,rem))/(Math.pow(1+rate,rem)-1);
+      emi=bal>0?(bal*rate*Math.pow(1+rate,rem))/(Math.pow(1+rate,rem)-1):0;
       intPaid=interest;
+      bal-=prep;
       prinPaid=emi-interest;
       bal-=prinPaid;
     }
 
-    monthlyData.push({i,d,opening,interest,intPaid,prinPaid,emi,closing:bal});
+    monthlyData.push({i,d,opening,disb,interest,intPaid,prinPaid,prep,emi,closing:bal});
     if(bal<=0) break;
   }
 
@@ -168,42 +264,31 @@ function generate(){
   renderTables();
 }
 
+/* ---- FY + SCH III ---- */
 function buildFY(){
   const map={};
-
   monthlyData.forEach((r,idx)=>{
     const fyStart = r.d.getMonth()<3 ? r.d.getFullYear()-1 : r.d.getFullYear();
-    const fy = fyStart + '-' + (fyStart+1);
-
-    if(!map[fy]){
-      map[fy]={open:r.opening,intAcc:0,intPaid:0,prin:0,close:r.closing,endIdx:idx};
-    }
+    const fy = fyStart+'-'+(fyStart+1);
+    if(!map[fy]) map[fy]={open:r.opening,intAcc:0,intPaid:0,prin:0,close:r.closing,end:idx};
     map[fy].intAcc+=r.interest;
     map[fy].intPaid+=r.intPaid;
-    map[fy].prin+=r.prinPaid;
+    map[fy].prin+=r.prinPaid + r.prep;
     map[fy].close=r.closing;
-    map[fy].endIdx=idx;
+    map[fy].end=idx;
   });
 
-  fyData = Object.keys(map).map(fy=>{
+  fyData=Object.keys(map).map(fy=>{
     const r=map[fy];
     let shortTerm=0;
-    for(let i=r.endIdx+1;i<=r.endIdx+12 && i<monthlyData.length;i++){
-      shortTerm+=monthlyData[i].prinPaid;
+    for(let i=r.end+1;i<=r.end+12 && i<monthlyData.length;i++){
+      shortTerm+=monthlyData[i].prinPaid + monthlyData[i].prep;
     }
-    return {
-      fy,
-      open:r.open,
-      intAcc:r.intAcc,
-      intPaid:r.intPaid,
-      prin:r.prin,
-      close:r.close,
-      shortTerm,
-      longTerm: Math.max(r.close - shortTerm,0)
-    };
+    return {fy,...r,shortTerm,longTerm:Math.max(r.close-shortTerm,0)};
   });
 }
 
+/* ---- RENDER ---- */
 function renderTables(){
   monthlyTable.querySelector('tbody').innerHTML =
     monthlyData.map(r=>`
@@ -211,9 +296,11 @@ function renderTables(){
         <td>${r.i+1}</td>
         <td>${period(r.d)}</td>
         <td>${fmt(r.opening)}</td>
+        <td>${fmt(r.disb)}</td>
         <td>${fmt(r.interest)}</td>
         <td>${fmt(r.intPaid)}</td>
         <td>${fmt(r.prinPaid)}</td>
+        <td>${fmt(r.prep)}</td>
         <td>${fmt(r.emi)}</td>
         <td>${fmt(Math.max(r.closing,0))}</td>
       </tr>`).join('');
@@ -232,24 +319,23 @@ function renderTables(){
       </tr>`).join('');
 }
 
+/* ---- EXPORT ---- */
 function exportMonthly(){
   exportCSV('Monthly_Schedule',[
-    ['Month','Period','Opening','Interest','Interest Paid','Principal Paid','EMI','Closing'],
-    ...monthlyData.map(r=>[r.i+1,period(r.d),fmt(r.opening),fmt(r.interest),fmt(r.intPaid),fmt(r.prinPaid),fmt(r.emi),fmt(r.closing)])
+    ['#','Period','Opening','Disb','Interest','Interest Paid','Principal Paid','Extra','EMI','Closing'],
+    ...monthlyData.map(r=>[r.i+1,period(r.d),fmt(r.opening),fmt(r.disb),fmt(r.interest),fmt(r.intPaid),fmt(r.prinPaid),fmt(r.prep),fmt(r.emi),fmt(r.closing)])
   ]);
 }
-
 function exportFY(){
   exportCSV('FY_Summary',[
     ['FY','Opening','Interest Accrued','Interest Paid','Principal Paid','Closing','Short-term','Long-term'],
     ...fyData.map(r=>[r.fy,fmt(r.open),fmt(r.intAcc),fmt(r.intPaid),fmt(r.prin),fmt(r.close),fmt(r.shortTerm),fmt(r.longTerm)])
   ]);
 }
-
 function exportCSV(name,rows){
   const meta=[
     ['Client Name',clientName.value],
-    ['Bank Name',bankName.value],
+    ['Bank',bankName.value],
     ['Loan A/c',loanAcc.value],
     ['Sanction Date',sanctionDate.value],
     ['EMI Start',emiStart.value],
