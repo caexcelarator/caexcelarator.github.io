@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Advanced Loan Calculator</title>
+
+<style>
+body { font-family: Arial; background:#f4f6f8; padding:20px; }
+.container { background:#fff; padding:20px; border-radius:8px; max-width:1300px; }
+h2,h3 { margin-top:0; }
+.row { display:flex; gap:15px; margin-bottom:10px; }
+.row label { flex:1; font-size:14px; }
+input, select { width:100%; padding:6px; }
+button { padding:6px 12px; background:#2b7cff; color:#fff; border:none; border-radius:4px; cursor:pointer; }
+button.delete { background:#dc3545; }
+table { width:100%; border-collapse:collapse; margin-top:10px; }
+th,td { border:1px solid #ccc; padding:6px; font-size:13px; text-align:right; }
+th { background:#eee; text-align:center; }
+.small { font-size:12px; color:#555; }
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h2>Advanced Loan Calculator</h2>
+
+<!-- METADATA -->
+<div class="row">
+  <label>Client Name <input></label>
+  <label>Bank Name <input></label>
+  <label>Loan A/c No <input></label>
+</div>
+
+<!-- DATES -->
+<div class="row">
+  <label>Sanction Date <input type="date" id="sanctionDate"></label>
+  <label>EMI Start Date <input type="date" id="emiStart"></label>
+</div>
+
+<!-- TERMS -->
+<div class="row">
+  <label>Sanction Limit <input type="number" id="limit"></label>
+  <label>Interest % p.a. <input type="number" step="0.01" id="roi"></label>
+</div>
+
+<div class="row">
+  <label>Tenure (Months) <input type="number" id="tenure"></label>
+  <label>Moratorium (Months) <input type="number" id="moratorium" value="0"></label>
+</div>
+
+<div class="row">
+  <label>Moratorium Type
+    <select id="morType">
+      <option value="pay">Pay Interest During Moratorium</option>
+      <option value="add">Add Interest to Principal</option>
+    </select>
+  </label>
+</div>
+
+<hr>
+
+<h3>Disbursements</h3>
+<div class="row">
+  <label>Date <input type="date" id="disbDate"></label>
+  <label>Amount <input type="number" id="disbAmt"></label>
+  <label><button onclick="addDisb()">Add</button></label>
+</div>
+
+<table>
+<thead><tr><th>Date</th><th>Amount</th><th>Action</th></tr></thead>
+<tbody id="disbBody"></tbody>
+</table>
+
+<hr>
+
+<h3>One-time Prepayments</h3>
+<div class="row">
+  <label>Date <input type="date" id="prepDate"></label>
+  <label>Amount <input type="number" id="prepAmt"></label>
+  <label><button onclick="addPrep()">Add</button></label>
+</div>
+
+<table>
+<thead><tr><th>Date</th><th>Amount</th><th>Action</th></tr></thead>
+<tbody id="prepBody"></tbody>
+</table>
+
+<hr>
+
+<h3>Recurring Extra Payments</h3>
+<div class="row">
+  <label>Amount <input type="number" id="recAmt"></label>
+  <label>Frequency
+    <select id="recFreq">
+      <option value="">None</option>
+      <option value="1">Monthly</option>
+      <option value="3">Quarterly</option>
+      <option value="6">Half-Yearly</option>
+      <option value="12">Yearly</option>
+    </select>
+  </label>
+  <label>Start Date <input type="date" id="recStart"></label>
+</div>
+
+<p class="small">Recurring payments are applied in addition to EMI and reduce principal.</p>
+
+<hr>
+
+<button onclick="generate()">Generate Schedule</button>
+
+<table>
+<thead>
+<tr>
+<th>Month</th>
+<th>Date (MMM-YYYY)</th>
+<th>Opening</th>
+<th>Disbursement</th>
+<th>Interest</th>
+<th>Interest Paid</th>
+<th>Principal Paid</th>
+<th>Extra Payment</th>
+<th>EMI</th>
+<th>Closing</th>
+</tr>
+</thead>
+<tbody id="out"></tbody>
+</table>
+
+</div>
+
+<script>
+let disbs = [], preps = [];
+
+function addDisb(){ disbs.push({d:disbDate.value,a:+disbAmt.value}); render(disbBody,disbs); }
+function addPrep(){ preps.push({d:prepDate.value,a:+prepAmt.value}); render(prepBody,preps); }
+
+function render(body,arr){
+  body.innerHTML='';
+  arr.forEach((x,i)=>{
+    body.innerHTML+=`
+    <tr>
+      <td><input type="date" value="${x.d}" onchange="arr[${i}].d=this.value"></td>
+      <td><input type="number" value="${x.a}" onchange="arr[${i}].a=+this.value"></td>
+      <td><button class="delete" onclick="arr.splice(${i},1);render(${body.id},arr)">X</button></td>
+    </tr>`;
+  });
+}
+
+// Deterministic MMM-YYYY formatter (e.g., Feb-2025)
+function formatMonth(d){
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return months[d.getMonth()] + "-" + d.getFullYear();
+}
+
+function generate(){
+  const rate = roi.value/1200;
+  const months = +tenure.value;
+  const mor = +moratorium.value;
+  const morType = document.getElementById('morType').value;
+
+  // Expand recurring prepayments
+  let allPreps = [...preps];
+  if (recAmt.value && recFreq.value && recStart.value) {
+    let d = new Date(recStart.value);
+    let end = new Date(emiStart.value);
+    end.setMonth(end.getMonth() + months);
+    while (d < end) {
+      allPreps.push({ d: d.toISOString().slice(0,10), a: +recAmt.value });
+      d.setMonth(d.getMonth() + +recFreq.value);
+    }
+  }
+
+  let bal = 0;
+  out.innerHTML='';
+
+  for(let i=0;i<months;i++){
+    let d=new Date(emiStart.value); d.setMonth(d.getMonth()+i);
+
+    let disb=0, prep=0;
+    disbs.forEach(x=>{ if(new Date(x.d).getMonth()==d.getMonth()&&new Date(x.d).getFullYear()==d.getFullYear()) disb+=x.a; });
+    allPreps.forEach(x=>{ if(new Date(x.d).getMonth()==d.getMonth()&&new Date(x.d).getFullYear()==d.getFullYear()) prep+=x.a; });
+
+    bal+=disb;
+    let opening=bal;
+    let interest=bal*rate;
+    let intPaid=0, prinPaid=0, emi=0;
+
+    if(i < mor){
+      if(morType==='pay') intPaid=interest;
+      else bal+=interest;
+      bal -= prep;
+    } else {
+      let rem = months - i;
+      emi = bal>0 ? (bal*rate*Math.pow(1+rate,rem))/(Math.pow(1+rate,rem)-1) : 0;
+      intPaid=interest;
+      bal -= prep;
+      prinPaid = emi - interest;
+      bal -= prinPaid;
+    }
+
+    out.innerHTML+=`
+    <tr>
+      <td>${i+1}</td>
+      <td>${formatMonth(d)}</td>
+      <td>${opening.toFixed(2)}</td>
+      <td>${disb.toFixed(2)}</td>
+      <td>${interest.toFixed(2)}</td>
+      <td>${intPaid.toFixed(2)}</td>
+      <td>${prinPaid.toFixed(2)}</td>
+      <td>${prep.toFixed(2)}</td>
+      <td>${emi.toFixed(2)}</td>
+      <td>${Math.max(bal,0).toFixed(2)}</td>
+    </tr>`;
+
+    if (bal <= 0) break;
+  }
+}
+</script>
+
+</body>
+</html>
