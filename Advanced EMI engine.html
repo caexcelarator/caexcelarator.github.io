@@ -1,357 +1,394 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Advanced EMI Engine</title>
+  <meta charset="UTF-8" />
+  <title>Corporate EMI Calculator – Stable Final Build</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<style>
-body { font-family: Arial; background:#f4f6f8; padding:20px; }
-.container { background:#fff; padding:20px; border-radius:8px; max-width:1600px; }
-h2,h3 { margin-top:0; }
-.row { display:flex; gap:15px; margin-bottom:10px; }
-.row label { flex:1; font-size:14px; }
-input, select { width:100%; padding:6px; }
-button { padding:6px 12px; background:#2b7cff; color:#fff; border:none; border-radius:4px; cursor:pointer; }
-button.export { background:#28a745; }
-button.delete { background:#dc3545; }
-table { width:100%; border-collapse:collapse; margin-top:10px; }
-th,td { border:1px solid #ccc; padding:6px; font-size:13px; text-align:right; }
-th { background:#eee; text-align:center; }
-.tab { margin-right:5px; }
-.small { font-size:12px; color:#555; }
-</style>
+  <style>
+    :root { --primary:#1f3a5f; --secondary:#e9eef5; --accent:#2c7be5; --danger:#d63939; --text:#2e2e2e; --border:#d5dbe3; }
+    *{box-sizing:border-box;font-family:"Segoe UI",Roboto,Arial,sans-serif}
+    body{margin:0;background:#f4f6f9;color:var(--text)}
+    h1,h2{margin:0 0 10px;color:var(--primary)}
+    .container{max-width:1400px;margin:20px auto;padding:20px}
+    .card{background:#fff;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.05);padding:20px;margin-bottom:20px}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+    .field{display:flex;flex-direction:column}
+    label{font-size:12px;font-weight:600;margin-bottom:4px}
+    input,select{padding:8px 10px;border-radius:6px;border:1px solid var(--border);font-size:14px}
+    input:disabled,select:disabled{background:#f1f3f6}
+    .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:15px}
+    button{padding:10px 18px;border-radius:6px;border:none;cursor:pointer;font-weight:600;font-size:14px}
+    .btn-primary{background:var(--accent);color:#fff}
+    .btn-secondary{background:var(--secondary)}
+    .btn-danger{background:var(--danger);color:#fff}
+    button:disabled{opacity:.6;cursor:not-allowed}
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th,td{border:1px solid var(--border);padding:8px;font-size:13px}
+    th{background:#f0f3f8;text-align:center}
+    td{text-align:right}
+    td:first-child,th:first-child{text-align:center}
+    td:nth-child(2){text-align:left}
+    .error-cell{background:#ffe5e5;color:#a10000;font-weight:600}
+
+@media print {
+  button { display: none; }
+  .card { box-shadow: none; }
+  body { background: #fff; }
+}
+
+
+
+  </style>
 </head>
-
 <body>
 <div class="container">
+  <h1>EMI Calculator – Final Stable Version</h1>
 
-<h2>Advanced EMI Engine</h2>
+  <!-- ================= LOAN DETAILS ================= -->
+  <div class="card">
+    <h2>Loan Details</h2>
+    <div class="grid">
+      <div class="field"><label>User Name</label><input id="userName"></div>
+      <div class="field"><label>Bank Name</label><input id="bankName"></div>
+      <div class="field"><label>Bank A/c Number</label><input id="bankAcc"></div>
+      <div class="field"><label>Sanction Limit</label><input id="sanctionLimit" type="number"></div>
+      <div class="field"><label>Sanction Date</label><input id="sanctionDate" type="date"></div>
+      <div class="field"><label>EMI Start Date</label><input id="emiStartDate" type="date"></div>
+      <div class="field"><label>Interest Rate (%)</label><input id="roi" type="number" step="0.01"></div>
+      <div class="field"><label>Total Tenure (Months)</label><input id="tenure" type="number"></div>
+      <div class="field"><label>Moratorium (Months)</label><input id="moratorium" type="number"></div>
+      <div class="field"><label>Moratorium Interest Option</label>
+        <select id="moroOption"><option value="">--Select--</option><option value="pay">Pay Interest Only</option><option value="add">Add Interest to Principal</option></select>
+      </div>
+      <div class="field"><label>Number Format</label>
+        <select id="numFormat"><option value="none">None</option><option value="hundreds">Hundreds</option><option value="thousands">Thousands</option><option value="lakhs">Lakhs</option><option value="crores">Crores</option></select>
+      </div>
+    </div>
+  </div>
 
-<!-- META -->
-<div class="row">
-  <label>Client Name <input id="clientName"></label>
-  <label>Bank Name <input id="bankName"></label>
-  <label>Loan A/c No <input id="loanAcc"></label>
-</div>
+  <!-- ================= DISBURSEMENTS ================= -->
+  <div class="card">
+    <h2>Disbursement Schedule</h2>
+    <button class="btn-secondary" onclick="addRow('disbTable')">+ Add</button>
+    <table id="disbTable"><thead><tr><th>Sr</th><th>Date</th><th>Amount</th><th>Action</th></tr></thead><tbody></tbody></table>
+  </div>
 
-<div class="row">
-  <label>Sanction Date <input type="date" id="sanctionDate"></label>
-  <label>EMI Start Date <input type="date" id="emiStart"></label>
-</div>
+  <!-- ================= PREPAYMENTS ================= -->
+  <div class="card">
+    <h2>Pre / Part Payments</h2>
+    <button class="btn-secondary" onclick="addRow('prepTable')">+ Add</button>
+    <table id="prepTable"><thead><tr><th>Sr</th><th>Date</th><th>Amount</th><th>Action</th></tr></thead><tbody></tbody></table>
+  </div>
 
-<div class="row">
-  <label>Sanction Limit <input type="number" id="limit"></label>
-  <label>Interest % p.a. <input type="number" step="0.01" id="roi"></label>
-</div>
+  <!-- ================= RECURRING ================= -->
+  <div class="card">
+    <h2>Recurring Extra Payments</h2>
+    <button class="btn-secondary" onclick="addRow('recTable',true)">+ Add</button>
+    <table id="recTable"><thead><tr><th>Sr</th><th>Start Date</th><th>End Date</th><th>Monthly Amount</th><th>Action</th></tr></thead><tbody></tbody></table>
+  </div>
 
-<div class="row">
-  <label>Tenure (Months) <input type="number" id="tenure"></label>
-  <label>Moratorium (Months) <input type="number" id="moratorium" value="0"></label>
-</div>
+  <!-- ================= ACTIONS ================= -->
+  <div class="card">
+    <div class="actions">
+      <button class="btn-primary" onclick="generateSchedule()">Generate Schedule</button>
+      <button class="btn-danger" id="unlockBtn" onclick="unlockAll()" disabled>Unblock Edit</button>
+<button class="btn-primary" onclick="exportExcel()">Export Excel</button>
+<button class="btn-primary" onclick="exportPDF()">Export PDF</button>
+    </div>
+  </div>
 
-<div class="row">
-  <label>Moratorium Type
-    <select id="morType">
-      <option value="pay">Pay Interest During Moratorium</option>
-      <option value="add">Add Interest to Principal</option>
-    </select>
-  </label>
+  <!-- ================= MONTHLY ================= -->
+  <div class="card">
+    <h2>Monthly Repayment Schedule</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Sr</th><th>Month</th><th>Opening</th><th>Disbursement</th>
+          <th>Pre / Part</th><th>Recurring</th><th>Interest</th>
+          <th>Interest Paid</th><th>EMI Principal</th><th>Total EMI</th><th>Closing</th>
+        </tr>
+      </thead>
+      <tbody id="repayBody"></tbody>
+    </table>
+  </div>
 
-  <label>Display Unit
-    <select id="unitSelect" onchange="renderTables()">
-      <option value="1">None</option>
-      <option value="100">Hundreds</option>
-      <option value="1000">Thousands</option>
-      <option value="100000">Lakhs</option>
-      <option value="10000000">Crores</option>
-    </select>
-  </label>
-</div>
-
-<hr>
-
-<!-- DISBURSEMENTS -->
-<h3>Disbursements</h3>
-<div class="row">
-  <label>Date <input type="date" id="disbDate"></label>
-  <label>Amount <input type="number" id="disbAmt"></label>
-  <label><button onclick="addDisb()">Add</button></label>
-</div>
-
-<table>
-<thead><tr><th>Date</th><th>Amount</th><th>Action</th></tr></thead>
-<tbody id="disbBody"></tbody>
-</table>
-
-<hr>
-
-<!-- PREPAYMENTS -->
-<h3>One-time Prepayments</h3>
-<div class="row">
-  <label>Date <input type="date" id="prepDate"></label>
-  <label>Amount <input type="number" id="prepAmt"></label>
-  <label><button onclick="addPrep()">Add</button></label>
-</div>
-
-<table>
-<thead><tr><th>Date</th><th>Amount</th><th>Action</th></tr></thead>
-<tbody id="prepBody"></tbody>
-</table>
-
-<hr>
-
-<!-- RECURRING -->
-<h3>Recurring Extra Payments</h3>
-<div class="row">
-  <label>Amount <input type="number" id="recAmt"></label>
-  <label>Frequency
-    <select id="recFreq">
-      <option value="">None</option>
-      <option value="1">Monthly</option>
-      <option value="3">Quarterly</option>
-      <option value="6">Half-Yearly</option>
-      <option value="12">Yearly</option>
-    </select>
-  </label>
-  <label>Start Date <input type="date" id="recStart"></label>
-</div>
-<p class="small">Recurring payments reduce principal in addition to EMI.</p>
-
-<hr>
-
-<button onclick="generate()">Generate Schedule</button>
-<button class="export" onclick="exportMonthly()">Export Monthly</button>
-<button class="export" onclick="exportFY()">Export FY</button>
-
-<hr>
-
-<button onclick="openTab('monthly')">Monthly</button>
-<button onclick="openTab('fy')">FY Summary</button>
-
-<!-- MONTHLY -->
-<div id="monthlyTab">
-<table id="monthlyTable">
-<thead>
-<tr>
-<th>#</th>
-<th>Period</th>
-<th>Opening</th>
-<th>Disb.</th>
-<th>Interest</th>
-<th>Interest Paid</th>
-<th>Principal Paid</th>
-<th>Extra Pay</th>
-<th>EMI</th>
-<th>Closing</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
-</div>
-
-<!-- FY -->
-<div id="fyTab" style="display:none;">
-<table id="fyTable">
-<thead>
-<tr>
-<th>FY</th>
-<th>Opening</th>
-<th>Interest Accrued</th>
-<th>Interest Paid</th>
-<th>Principal Paid</th>
-<th>Closing</th>
-<th>Short-term (Next 12M)</th>
-<th>Long-term</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
-</div>
-
+  <!-- ================= YEARLY ================= -->
+  <div class="card">
+    <h2>Year-wise Summary (FY)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>FY</th><th>Opening</th><th>Disbursement</th><th>Principal Repaid</th>
+          <th>Interest Paid</th><th>Total EMI</th><th>Closing</th>
+          <th>Short-term Due</th><th>Long-term Due</th>
+        </tr>
+      </thead>
+      <tbody id="yearBody"></tbody>
+    </table>
+  </div>
 </div>
 
 <script>
-let disbs=[], preps=[], monthlyData=[], fyData=[];
+/* ================= STATE & UI ================= */
+const state={locked:false};
+function addRow(tableId,isRecurring=false){ if(state.locked) return; const tb=document.querySelector(`#${tableId} tbody`); const r=tb.insertRow(); r.innerHTML=isRecurring?`<td></td><td><input type=date></td><td><input type=date></td><td><input type=number></td><td><button onclick=delRow(this)>X</button></td>`:`<td></td><td><input type=date></td><td><input type=number></td><td><button onclick=delRow(this)>X</button></td>`; renumber(tb);} 
+function delRow(b){if(state.locked)return;const tb=b.closest('tbody');b.closest('tr').remove();renumber(tb)}
+function renumber(tb){[...tb.rows].forEach((r,i)=>r.cells[0].innerText=i+1)}
+function lockInputs(){state.locked=true;document.querySelectorAll('input,select,button.btn-secondary').forEach(e=>e.disabled=true);unlockBtn.disabled=false}
+function unlockAll(){state.locked=false;document.querySelectorAll('input,select,button').forEach(e=>e.disabled=false);repayBody.innerHTML='';yearBody.innerHTML='';}
 
-function openTab(t){
-  monthlyTab.style.display = t==='monthly'?'block':'none';
-  fyTab.style.display = t==='fy'?'block':'none';
+/* ================= VALIDATIONS ================= */
+function validateDatesAndLimits(){
+  const s=new Date(sanctionDate.value);
+  const e=new Date(emiStartDate.value);
+  if(e<s){alert('EMI Start Date cannot be before Sanction Date');return false}
+
+  const disbRows=[...disbTable.tBodies[0].rows];
+  if(!disbRows.length){alert('At least one disbursement required');return false}
+
+  let disbTotal=0;
+  const disbs=disbRows.map(r=>{ const d=new Date(r.cells[1].querySelector('input').value); const a=+r.cells[2].querySelector('input').value||0; disbTotal+=a; return {d,a}; }).sort((a,b)=>a.d-b.d);
+
+  for(const x of disbs){ if(x.d<s){alert('Disbursement date cannot be before Sanction Date');return false} }
+  if(disbTotal>+sanctionLimit.value){alert('Total disbursement exceeds sanction limit');return false}
+  if(e<disbs[0].d){alert('EMI Start Date cannot be before first disbursement');return false}
+
+  const prepays=[...prepTable.tBodies[0].rows].map(r=>({ d:new Date(r.cells[1].querySelector('input').value), a:+r.cells[2].querySelector('input').value||0 })).sort((a,b)=>a.d-b.d);
+  let running=0, di=0;
+  prepays.forEach(p=>{ while(di<disbs.length && disbs[di].d<=p.d){ running+=disbs[di].a; di++; } if(p.a>running){ alert('Prepayment exceeds outstanding principal on '+p.d.toLocaleDateString()); throw new Error(); } running-=p.a; });
+
+  const recurrings=[...recTable.tBodies[0].rows].map(r=>({ sd:new Date(r.cells[1].querySelector('input').value), ed:new Date(r.cells[2].querySelector('input').value), a:+r.cells[3].querySelector('input').value||0 }));
+  recurrings.forEach(rec=>{ let rp=0, idx=0, dt=new Date(rec.sd); while(dt<=rec.ed){ while(idx<disbs.length && disbs[idx].d<=dt){ rp+=disbs[idx].a; idx++; } if(rec.a>rp){ alert('Recurring payment exceeds outstanding principal in '+dt.toLocaleDateString()); throw new Error(); } dt=addMonth(dt); } });
+
+  return true;
 }
 
-function fmt(v){
-  const d=+unitSelect.value;
-  return (v/d).toFixed(2);
-}
+/* ================= CORE ENGINE ================= */
+let fyMap={};
+function generateSchedule(){
+  try{ if(!validateDatesAndLimits())return; }catch(e){return}
+  lockInputs();
 
-function period(d){
-  const m=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  return m[d.getMonth()]+'-'+d.getFullYear();
-}
+  fyMap={};
+  repayBody.innerHTML='';
 
-/* ---- DISBURSEMENTS ---- */
-function addDisb(){
-  if(!disbDate.value||!disbAmt.value) return;
-  disbs.push({d:disbDate.value,a:+disbAmt.value});
-  renderList(disbBody,disbs);
-}
-function addPrep(){
-  if(!prepDate.value||!prepAmt.value) return;
-  preps.push({d:prepDate.value,a:+prepAmt.value});
-  renderList(prepBody,preps);
-}
-function renderList(body,arr){
-  body.innerHTML='';
-  arr.forEach((x,i)=>{
-    body.innerHTML+=`
-    <tr>
-      <td><input type="date" value="${x.d}" onchange="arr[${i}].d=this.value"></td>
-      <td><input type="number" value="${x.a}" onchange="arr[${i}].a=+this.value"></td>
-      <td><button class="delete" onclick="arr.splice(${i},1);renderList(${body.id},arr)">X</button></td>
-    </tr>`;
-  });
-}
+  const rate=(+roi.value||0)/1200;
+  const totalTenure=+tenure.value||0;
+  const moro=+moratorium.value||0;
+  const emiMonths=totalTenure-moro;
 
-/* ---- CORE ENGINE ---- */
-function generate(){
-  monthlyData=[]; fyData=[];
-  const rate=roi.value/1200;
-  const months=+tenure.value;
-  const mor=+moratorium.value;
-  const type=morType.value;
-  let bal=0;
+  const disbs=[...disbTable.tBodies[0].rows].map(r=>({date:new Date(r.cells[1].querySelector('input').value),amt:+r.cells[2].querySelector('input').value||0,used:false})).sort((a,b)=>a.date-b.date);
 
-  /* expand recurring */
-  let allPreps=[...preps];
-  if(recAmt.value && recFreq.value && recStart.value){
-    let d=new Date(recStart.value);
-    let end=new Date(emiStart.value); end.setMonth(end.getMonth()+months);
-    while(d<end){
-      allPreps.push({d:d.toISOString().slice(0,10),a:+recAmt.value});
-      d.setMonth(d.getMonth()+ +recFreq.value);
-    }
+  let principal=0;
+  let d=new Date(Math.min(new Date(emiStartDate.value),disbs[0].date));
+
+  function applyDisb(date){ let m=0; disbs.forEach(x=>{ if(!x.used && x.date<=date){ principal+=x.amt; m+=x.amt; x.used=true; } }); return m; }
+
+  // MORATORIUM
+  for(let m=1;m<=moro;m++){
+    const disb=applyDisb(d);
+    const opening=principal-disb;
+    const prepay=getPrepayment(d);
+    const recurring=getRecurring(d);
+    principal=Math.max(0,principal-prepay-recurring);
+    const interest=principal*rate;
+    if(moroOption.value==='add') principal+=interest;
+    addRowRepay(d,opening,disb,prepay,recurring,interest,moroOption.value==='pay'?interest:0,0,principal);
+    d=addMonth(d);
   }
 
-  for(let i=0;i<months;i++){
-    let d=new Date(emiStart.value); d.setMonth(d.getMonth()+i);
+  // EMI PHASE
+  for(let i=0;i<emiMonths;i++){
+    const disb=applyDisb(d);
+    const opening=principal-disb;
+    const interest=principal*rate;
+    const remaining=emiMonths-i;
+    const emi=rate?principal*rate*Math.pow(1+rate,remaining)/(Math.pow(1+rate,remaining)-1):principal/remaining;
+    const prepay=getPrepayment(d);
+    const recurring=getRecurring(d);
+    const emiPrin=Math.min(emi-interest,principal);
+    principal=Math.max(0,principal-emiPrin-prepay-recurring);
+    addRowRepay(d,opening,disb,prepay,recurring,interest,interest,emiPrin,principal);
+    d=addMonth(d);
+  }
+}
 
-    let disb=0, prep=0;
-    disbs.forEach(x=>{ if(new Date(x.d).getMonth()==d.getMonth()&&new Date(x.d).getFullYear()==d.getFullYear()) disb+=x.a; });
-    allPreps.forEach(x=>{ if(new Date(x.d).getMonth()==d.getMonth()&&new Date(x.d).getFullYear()==d.getFullYear()) prep+=x.a; });
+/* ================= RENDERING ================= */
+function addRowRepay(d,o,di,p,r,i,ip,ep,c){
+  const tr=repayBody.insertRow();
+  const totalEmi=ip+ep;
+  const isError=(p+r+ep)>(o+di);
+  tr.innerHTML=`<td>${repayBody.rows.length}</td><td>${d.toLocaleString('default',{month:'short',year:'numeric'})}</td>
+    <td>${fmt(o)}</td><td>${fmt(di)}</td><td>${fmt(p)}</td><td>${fmt(r)}</td>
+    <td>${fmt(i)}</td><td>${fmt(ip)}</td><td>${fmt(ep)}</td><td>${fmt(totalEmi)}</td>
+    <td class="${isError?'error-cell':''}">${fmt(c)}</td>`;
+  accumulateYear(d,o,di,ip,ep,p,r,c);
+}
 
-    bal+=disb;
-    let opening=bal;
-    let interest=bal*rate;
-    let intPaid=0, prinPaid=0, emi=0;
+function fyKey(d){ return (d.getMonth()<3)?(d.getFullYear()-1)+'-'+d.getFullYear():d.getFullYear()+'-'+(d.getFullYear()+1); }
+function accumulateYear(d,o,di,ip,ep,p,r,c){
+  const fy=fyKey(d);
+  if(!fyMap[fy]) fyMap[fy]={opening:o,disb:0,prin:0,intp:0,emi:0,closing:c};
 
-    if(i<mor){
-      if(type==='pay') intPaid=interest;
-      else bal+=interest;
-      bal-=prep;
-    } else {
-      let rem=months-i;
-      emi=bal>0?(bal*rate*Math.pow(1+rate,rem))/(Math.pow(1+rate,rem)-1):0;
-      intPaid=interest;
-      bal-=prep;
-      prinPaid=emi-interest;
-      bal-=prinPaid;
-    }
+  fyMap[fy].disb += di;
 
-    monthlyData.push({i,d,opening,disb,interest,intPaid,prinPaid,prep,emi,closing:bal});
-    if(bal<=0) break;
+  // ✅ PRINCIPAL PAID = EMI Principal + Part Payment + Recurring
+  fyMap[fy].prin += (ep + p + r);
+
+  fyMap[fy].intp += ip;
+  fyMap[fy].emi  += (ip + ep);
+  fyMap[fy].closing = c;
+
+  renderYear();
+}
+function renderYear(){
+  yearBody.innerHTML='';
+  Object.entries(fyMap).forEach(([fy,v])=>{
+	const nextFYPrin = getNextFYPrincipal(fy);
+    const st = Math.min(v.closing, nextFYPrin);
+    const lt = Math.max(0, v.closing - st);
+    const tr=yearBody.insertRow();
+    tr.innerHTML=`<td>${fy}</td><td>${fmt(v.opening)}</td><td>${fmt(v.disb)}</td><td>${fmt(v.prin)}</td>
+      <td>${fmt(v.intp)}</td><td>${fmt(v.emi)}</td><td>${fmt(v.closing)}</td><td>${fmt(st)}</td><td>${fmt(lt)}</td>`;
+  });
+}
+
+/* ================= HELPERS ================= */
+function getNextFYPrincipal(fy){
+  const parts = fy.split('-').map(Number);   // e.g. "2024-2025"
+  const nextFY = parts[1] + '-' + (parts[1] + 1);
+  return fyMap[nextFY] ? fyMap[nextFY].prin : 0;
+}
+function getPrepayment(d){ let a=0; document.querySelectorAll('#prepTable tbody tr').forEach(r=>{ const dt=new Date(r.cells[1].querySelector('input').value); if(sameMonth(dt,d)) a+=+r.cells[2].querySelector('input').value||0; }); return a; }
+function getRecurring(d){ let a=0; document.querySelectorAll('#recTable tbody tr').forEach(r=>{ const sd=new Date(r.cells[1].querySelector('input').value); const ed=new Date(r.cells[2].querySelector('input').value); if(d>=sd && d<=ed) a+=+r.cells[3].querySelector('input').value||0; }); return a; }
+function sameMonth(a,b){ return a.getMonth()===b.getMonth() && a.getFullYear()===b.getFullYear(); }
+function addMonth(d,n=1){ const x=new Date(d); x.setMonth(x.getMonth()+n); return x; }
+function fmt(n){ let v=n; const f=numFormat.value; if(f==='hundreds')v/=100; if(f==='thousands')v/=1000; if(f==='lakhs')v/=100000; if(f==='crores')v/=10000000; return v.toFixed(2); }
+
+
+function exportExcel(){
+
+  if(!repayBody.rows.length){
+    alert("Please generate schedule before exporting.");
+    return;
   }
 
-  buildFY();
-  renderTables();
-}
+  const client = (userName.value || "Client").replace(/\s+/g,'_');
+  const fyList = Object.keys(fyMap);
+  const fyRange = fyList.length ? fyList[0] + "_to_" + fyList[fyList.length-1] : "FY";
+  const fileName = `${client}_EMI_${fyRange}.xlsx`;
 
-/* ---- FY + SCH III ---- */
-function buildFY(){
-  const map={};
-  monthlyData.forEach((r,idx)=>{
-    const fyStart = r.d.getMonth()<3 ? r.d.getFullYear()-1 : r.d.getFullYear();
-    const fy = fyStart+'-'+(fyStart+1);
-    if(!map[fy]) map[fy]={open:r.opening,intAcc:0,intPaid:0,prin:0,close:r.closing,end:idx};
-    map[fy].intAcc+=r.interest;
-    map[fy].intPaid+=r.intPaid;
-    map[fy].prin+=r.prinPaid + r.prep;
-    map[fy].close=r.closing;
-    map[fy].end=idx;
-  });
+  const wb = XLSX.utils.book_new();
 
-  fyData=Object.keys(map).map(fy=>{
-    const r=map[fy];
-    let shortTerm=0;
-    for(let i=r.end+1;i<=r.end+12 && i<monthlyData.length;i++){
-      shortTerm+=monthlyData[i].prinPaid + monthlyData[i].prep;
-    }
-    return {fy,...r,shortTerm,longTerm:Math.max(r.close-shortTerm,0)};
-  });
-}
-
-/* ---- RENDER ---- */
-function renderTables(){
-  monthlyTable.querySelector('tbody').innerHTML =
-    monthlyData.map(r=>`
-      <tr>
-        <td>${r.i+1}</td>
-        <td>${period(r.d)}</td>
-        <td>${fmt(r.opening)}</td>
-        <td>${fmt(r.disb)}</td>
-        <td>${fmt(r.interest)}</td>
-        <td>${fmt(r.intPaid)}</td>
-        <td>${fmt(r.prinPaid)}</td>
-        <td>${fmt(r.prep)}</td>
-        <td>${fmt(r.emi)}</td>
-        <td>${fmt(Math.max(r.closing,0))}</td>
-      </tr>`).join('');
-
-  fyTable.querySelector('tbody').innerHTML =
-    fyData.map(r=>`
-      <tr>
-        <td>${r.fy}</td>
-        <td>${fmt(r.open)}</td>
-        <td>${fmt(r.intAcc)}</td>
-        <td>${fmt(r.intPaid)}</td>
-        <td>${fmt(r.prin)}</td>
-        <td>${fmt(r.close)}</td>
-        <td>${fmt(r.shortTerm)}</td>
-        <td>${fmt(r.longTerm)}</td>
-      </tr>`).join('');
-}
-
-/* ---- EXPORT ---- */
-function exportMonthly(){
-  exportCSV('Monthly_Schedule',[
-    ['#','Period','Opening','Disb','Interest','Interest Paid','Principal Paid','Extra','EMI','Closing'],
-    ...monthlyData.map(r=>[r.i+1,period(r.d),fmt(r.opening),fmt(r.disb),fmt(r.interest),fmt(r.intPaid),fmt(r.prinPaid),fmt(r.prep),fmt(r.emi),fmt(r.closing)])
-  ]);
-}
-function exportFY(){
-  exportCSV('FY_Summary',[
-    ['FY','Opening','Interest Accrued','Interest Paid','Principal Paid','Closing','Short-term','Long-term'],
-    ...fyData.map(r=>[r.fy,fmt(r.open),fmt(r.intAcc),fmt(r.intPaid),fmt(r.prin),fmt(r.close),fmt(r.shortTerm),fmt(r.longTerm)])
-  ]);
-}
-function exportCSV(name,rows){
-  const meta=[
-    ['Client Name',clientName.value],
-    ['Bank',bankName.value],
-    ['Loan A/c',loanAcc.value],
-    ['Sanction Date',sanctionDate.value],
-    ['EMI Start',emiStart.value],
-    ['ROI',roi.value],
-    ['Tenure',tenure.value],
-    ['Moratorium',moratorium.value],
-    []
+  /* ===== Sheet 1 : Loan Details ===== */
+  const loanData = [
+    ["User Name", userName.value],
+    ["Bank Name", bankName.value],
+    ["Bank A/c No", bankAcc.value],
+    ["Sanction Limit", sanctionLimit.value],
+    ["Sanction Date", sanctionDate.value],
+    ["EMI Start Date", emiStartDate.value],
+    ["Interest Rate (%)", roi.value],
+    ["Tenure (Months)", tenure.value],
+    ["Moratorium (Months)", moratorium.value],
+    ["Moratorium Option", moroOption.value],
+    ["Number Format", numFormat.value]
   ];
-  const csv=[...meta.map(r=>r.join(',')),...rows.map(r=>r.join(','))];
-  const blob=new Blob([csv.join('\n')],{type:'text/csv'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download=name+'.csv';
-  a.click();
-}
-</script>
+  const wsLoan = XLSX.utils.aoa_to_sheet(loanData);
+  XLSX.utils.book_append_sheet(wb, wsLoan, "Loan Details");
 
+  /* ===== Sheet 2 : Monthly Schedule ===== */
+  const monthlyTable = document.getElementById("repayBody").parentElement;
+  const wsMonthly = XLSX.utils.table_to_sheet(monthlyTable, { raw:false });
+  XLSX.utils.book_append_sheet(wb, wsMonthly, "Monthly Schedule");
+
+  /* ===== Sheet 3 : Yearly Summary ===== */
+  const yearlyTable = document.getElementById("yearBody").parentElement;
+  const wsYearly = XLSX.utils.table_to_sheet(yearlyTable, { raw:false });
+  XLSX.utils.book_append_sheet(wb, wsYearly, "Yearly Summary");
+
+  XLSX.writeFile(wb, fileName);
+}
+
+
+function exportPDF(){
+
+  if(!repayBody.rows.length){
+    alert("Please generate schedule first");
+    return;
+  }
+
+  const client = (userName.value || "Client");
+  const fyKeys = Object.keys(fyMap);
+  const fyRange = fyKeys.length ? fyKeys[0] + " to " + fyKeys[fyKeys.length-1] : "";
+
+  // ----- Build Loan Details HTML safely -----
+  const loanDetailsHTML = `
+    <table>
+      <tr><th colspan="2">Loan Details</th></tr>
+      <tr><td>User Name</td><td>${userName.value || ""}</td></tr>
+      <tr><td>Bank Name</td><td>${bankName.value || ""}</td></tr>
+      <tr><td>Bank A/c Number</td><td>${bankAcc.value || ""}</td></tr>
+      <tr><td>Sanction Limit</td><td>${fmt(+sanctionLimit.value || 0)}</td></tr>
+      <tr><td>Sanction Date</td><td>${sanctionDate.value || ""}</td></tr>
+      <tr><td>EMI Start Date</td><td>${emiStartDate.value || ""}</td></tr>
+      <tr><td>Interest Rate (%)</td><td>${roi.value || ""}</td></tr>
+      <tr><td>Total Tenure (Months)</td><td>${tenure.value || ""}</td></tr>
+      <tr><td>Moratorium (Months)</td><td>${moratorium.value || ""}</td></tr>
+      <tr><td>Moratorium Option</td><td>${moroOption.value || ""}</td></tr>
+      <tr><td>Number Format</td><td>${numFormat.value || ""}</td></tr>
+    </table>
+  `;
+
+  const win = window.open('', '_blank');
+
+  win.document.write(`
+    <html>
+    <head>
+      <title>${client} – EMI Schedule (${fyRange})</title>
+      <style>
+        body { font-family: Arial; font-size: 12px; margin: 20px; }
+        h2 { margin-top: 30px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #000; padding: 6px; font-size: 11px; }
+        th { background: #f0f0f0; text-align: center; }
+        td:first-child { width: 35%; font-weight: bold; }
+        td { text-align: left; }
+        .num { text-align: right; }
+      </style>
+    </head>
+    <body>
+
+      <h2>Loan & Facility Information</h2>
+      ${loanDetailsHTML}
+
+      <h2>Monthly Repayment Schedule</h2>
+      ${repayBody.parentElement.outerHTML}
+
+      <h2>Year-wise Summary</h2>
+      ${yearBody.parentElement.outerHTML}
+
+      <h2>Schedule 3 classification of Short Term and Long Term Dues Yearwise</h2>
+      <p>
+        Based on the loan records and repayment schedules examined, the outstanding
+        loan balance has been classified into short-term and long-term borrowings
+        in accordance with Schedule III of the Companies Act, 2013.
+      </p>
+
+    </body>
+    </html>
+  `);
+
+  win.document.close();
+  win.focus();
+  win.print();
+}
+
+
+
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </body>
 </html>
