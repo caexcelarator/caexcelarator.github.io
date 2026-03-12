@@ -291,6 +291,15 @@
             border: 2px solid var(--accent);
         }
         .btn-outline:hover { background: var(--accent); color: white; }
+        .btn-pdf {
+            background: linear-gradient(135deg, #c0392b, #e74c3c);
+            color: white;
+            box-shadow: 0 4px 15px rgba(192, 57, 43, 0.3);
+        }
+        .btn-pdf:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(192, 57, 43, 0.45);
+        }
 
         /* ===== CERTIFICATE PREVIEW ===== */
         .preview-card .card-header {
@@ -568,6 +577,487 @@
             from { transform: translateY(20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
+
+        /* ===== GROUP-BASED ASSETS / LIABILITIES ===== */
+        .group-block {
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 14px;
+            overflow: hidden;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .group-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            background: linear-gradient(135deg, rgba(26,82,118,0.08), rgba(41,128,185,0.06));
+            border-bottom: 1.5px solid var(--border);
+        }
+        .group-name-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: var(--primary);
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            min-width: 0;
+        }
+        .group-name-input::placeholder { color: #aab4be; font-weight: 400; }
+        .group-total-badge {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--primary);
+            background: rgba(26,82,118,0.1);
+            border-radius: 6px;
+            padding: 3px 10px;
+            white-space: nowrap;
+        }
+        .group-body { padding: 8px 10px 4px; }
+        .subitem-row {
+            display: grid;
+            grid-template-columns: 1fr 130px 34px;
+            gap: 6px;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .subitem-row input[type="text"],
+        .subitem-row input[type="number"] {
+            padding: 7px 10px;
+            border: 1.5px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.83rem;
+            font-family: 'Inter', sans-serif;
+            background: #fafbfc;
+            width: 100%;
+            transition: border-color 0.2s;
+        }
+        .subitem-row input:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            background: #fff;
+        }
+        .group-footer {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 10px 10px;
+        }
+        .btn-add-sub {
+            padding: 5px 12px;
+            background: rgba(26,82,118,0.06);
+            color: var(--primary);
+            border: 1.5px dashed var(--primary-light);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.78rem;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+        }
+        .btn-add-sub:hover { background: rgba(26,82,118,0.14); }
+        .btn-remove-group {
+            margin-left: auto;
+            background: #fee;
+            color: var(--accent);
+            border: 1.5px solid #fcc;
+            border-radius: 6px;
+            padding: 4px 10px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+        }
+        .btn-remove-group:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+        .btn-add-group {
+            margin-top: 4px;
+            margin-bottom: 10px;
+            padding: 9px 18px;
+            background: rgba(26,82,118,0.07);
+            color: var(--primary);
+            border: 2px dashed var(--primary-light);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.87rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+            display: block;
+            width: 100%;
+        }
+        .btn-add-group:hover { background: rgba(26,82,118,0.15); }
+        .subitem-col-header {
+            display: grid;
+            grid-template-columns: 1fr 130px 34px;
+            gap: 6px;
+            padding: 0 10px 4px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ===== REMARKS & UPLOAD ===== */
+        .subitem-wrapper { margin-bottom: 8px; }
+        .subitem-main-row {
+            display: grid;
+            grid-template-columns: 1fr 130px 34px 28px;
+            gap: 6px;
+            align-items: center;
+        }
+        .subitem-main-row input[type="text"],
+        .subitem-main-row input[type="number"] {
+            padding: 7px 10px;
+            border: 1.5px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.83rem;
+            font-family: 'Inter', sans-serif;
+            background: #fafbfc;
+            width: 100%;
+            transition: border-color 0.2s;
+        }
+        .subitem-main-row input:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            background: #fff;
+        }
+        .btn-toggle-remarks {
+            width: 28px; height: 28px;
+            background: rgba(26,82,118,0.08);
+            border: 1.5px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            color: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .btn-toggle-remarks:hover, .btn-toggle-remarks.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+        .remarks-panel {
+            display: none;
+            margin-top: 5px;
+            padding: 10px 12px;
+            background: #f8fafc;
+            border: 1.5px solid #dce7f0;
+            border-radius: 8px;
+            border-top-left-radius: 0;
+        }
+        .remarks-panel.open { display: block; }
+        .remarks-panel textarea {
+            width: 100%;
+            padding: 7px 10px;
+            border: 1.5px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-family: 'Inter', sans-serif;
+            resize: vertical;
+            min-height: 52px;
+            background: #fff;
+            transition: border-color 0.2s;
+        }
+        .remarks-panel textarea:focus {
+            outline: none;
+            border-color: var(--primary-light);
+        }
+        .remarks-panel label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 4px;
+            margin-top: 8px;
+        }
+        .remarks-panel label:first-child { margin-top: 0; }
+        .upload-zone {
+            border: 2px dashed #b0c4d8;
+            border-radius: 8px;
+            padding: 10px 14px;
+            text-align: center;
+            cursor: pointer;
+            background: #fff;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .upload-zone:hover { border-color: var(--primary-light); background: #f0f7ff; }
+        .upload-zone input[type="file"] {
+            position: absolute; inset: 0;
+            opacity: 0; cursor: pointer;
+            width: 100%; height: 100%;
+        }
+        .upload-zone .upload-label {
+            font-size: 0.78rem;
+            color: var(--text-light);
+            pointer-events: none;
+        }
+        .upload-zone .upload-label span { color: var(--primary); font-weight: 600; }
+        .file-preview-list { margin-top: 6px; }
+        .file-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #e8f4fd;
+            border: 1px solid #b0d4ed;
+            border-radius: 20px;
+            padding: 3px 10px 3px 8px;
+            font-size: 0.75rem;
+            color: var(--primary);
+            margin: 3px 3px 0 0;
+        }
+        .file-chip .chip-remove {
+            background: none; border: none;
+            color: var(--accent); cursor: pointer;
+            font-size: 0.85rem; padding: 0; line-height: 1;
+        }
+        .has-remarks-dot {
+            display: inline-block;
+            width: 7px; height: 7px;
+            background: var(--gold);
+            border-radius: 50%;
+            margin-left: 4px;
+            vertical-align: middle;
+            flex-shrink: 0;
+        }
+
+        /* ===== ANNEXURE PREVIEW ===== */
+        .annexure-section {
+            margin-top: 30px;
+            page-break-before: always;
+        }
+        .annexure-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-align: center;
+            padding: 14px;
+            border: 2px solid var(--primary);
+            margin-bottom: 18px;
+            background: #eef5f9;
+        }
+        .annexure-entry {
+            margin-bottom: 18px;
+            padding: 14px 18px;
+            border-left: 4px solid var(--primary-light);
+            background: #fafcff;
+            border-radius: 0 8px 8px 0;
+        }
+        .annexure-entry .ann-item-name {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+        .annexure-entry .ann-amount {
+            font-size: 0.82rem;
+            color: #555;
+            margin-bottom: 6px;
+        }
+        .annexure-entry .ann-remark {
+            font-size: 0.88rem;
+            color: var(--text);
+            font-style: italic;
+            background: #fff;
+            border: 1px solid #dde;
+            border-radius: 6px;
+            padding: 7px 12px;
+            margin-bottom: 8px;
+        }
+        .annexure-entry .ann-docs {}
+        .annexure-doc-img {
+            max-width: 100%;
+            max-height: 420px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            margin-top: 8px;
+            display: block;
+        }
+        .annexure-doc-pdf-note {
+            font-size: 0.8rem;
+            color: #888;
+            font-style: italic;
+            margin-top: 4px;
+        }
+
+        /* ===== PRINT / PDF STYLES ===== */
+        @media print {
+            /* Hide everything except the print container */
+            body > *:not(#printContainer) { display: none !important; }
+            #printContainer { display: block !important; }
+
+            @page {
+                size: A4 portrait;
+                margin: 10mm 13mm;
+            }
+
+            body {
+                background: #fff !important;
+                font-family: 'Georgia', 'Times New Roman', serif;
+                color: #1a1a1a;
+                line-height: 1.8;
+            }
+
+            #printContainer { padding: 0; margin: 0; }
+
+            /* Certificate */
+            .certificate {
+                padding: 20px 15px;
+                font-family: 'Georgia', 'Times New Roman', serif;
+                animation: none !important;
+            }
+            .cert-border {
+                border: 3px double #1a5276 !important;
+                padding: 25px 20px;
+            }
+            .cert-border::before { display: none; }
+            .cert-watermark { display: none !important; }
+
+            .cert-header { text-align: center; margin-bottom: 18px; }
+            .ca-name { font-size: 14pt; font-weight: bold; color: #1a5276 !important; text-transform: uppercase; letter-spacing: 2px; }
+            .ca-details { font-size: 8.5pt; color: #555 !important; }
+            .udin-no { font-size: 7.5pt; color: #777 !important; }
+
+            .cert-divider { border: none !important; border-top: 2px solid #1a5276 !important; margin: 10px 0; }
+            .cert-divider.thin { border-top: 1px solid #ccc !important; }
+
+            .cert-title {
+                text-align: center;
+                font-size: 14pt;
+                font-weight: bold;
+                color: #1a5276 !important;
+                text-transform: uppercase;
+                letter-spacing: 4px;
+                margin: 15px 0;
+            }
+            .cert-title::after { display: none; }
+
+            .cert-ref-row {
+                font-size: 8.5pt;
+                color: #555 !important;
+                margin-bottom: 12px;
+                display: flex;
+                justify-content: space-between;
+            }
+
+            .cert-body { font-size: 10pt; text-align: justify; }
+            .cert-body p { margin-bottom: 8px; }
+            .highlight { font-weight: bold; color: #1a5276 !important; }
+
+            .cert-table {
+                width: 100%;
+                border-collapse: collapse !important;
+                margin: 14px 0;
+                font-size: 9pt;
+                page-break-inside: auto;
+            }
+            .cert-table th {
+                background: #1a5276 !important;
+                color: #fff !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                padding: 6px 10px;
+                text-align: left;
+                font-weight: bold;
+                text-transform: uppercase;
+            }
+            .cert-table td { padding: 5px 10px; border-bottom: 1px solid #eee !important; }
+            .cert-table tr { page-break-inside: avoid; }
+
+            .section-head td {
+                font-weight: bold !important;
+                background: #eef5f9 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                color: #1a5276 !important;
+                text-transform: uppercase;
+            }
+
+            .networth-box {
+                border: 2px solid #1a5276 !important;
+                padding: 12px;
+                text-align: center;
+                margin: 16px 0;
+                background: #eef5f9 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                page-break-inside: avoid;
+            }
+            .networth-box .label { font-size: 8pt; text-transform: uppercase; letter-spacing: 2px; color: #555 !important; }
+            .networth-box .value { font-size: 16pt; font-weight: bold; color: #1a5276 !important; }
+            .networth-box .in-words { font-size: 8pt; color: #666 !important; font-style: italic; }
+
+            .cert-place-date { font-size: 8.5pt; color: #555 !important; margin-top: 16px; }
+
+            .cert-signature {
+                margin-top: 40px;
+                font-size: 8.5pt;
+                display: flex;
+                justify-content: space-between;
+            }
+            .cert-signature .sig-block { text-align: center; }
+            .cert-signature .sig-line { width: 160px; border-top: 1.5px solid #333 !important; margin: 0 auto 5px; }
+            .cert-signature .sig-name { font-weight: bold; color: #1a5276 !important; }
+            .cert-signature .sig-detail { color: #666 !important; font-size: 7.5pt; }
+            .cert-seal { text-align: center; margin-top: 12px; font-size: 7.5pt; color: #999 !important; font-style: italic; }
+
+            /* Annexure */
+            .annexure-section { page-break-before: always; }
+            .annexure-title {
+                text-align: center;
+                font-size: 12pt;
+                font-weight: bold;
+                color: #1a5276 !important;
+                text-transform: uppercase;
+                letter-spacing: 3px;
+                padding: 10px;
+                border: 2px solid #1a5276 !important;
+                background: #eef5f9 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                margin-bottom: 14px;
+            }
+            .annexure-entry {
+                margin-bottom: 14px;
+                padding: 10px 14px;
+                border-left: 4px solid #2980b9 !important;
+                background: #fafcff !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                page-break-inside: avoid;
+            }
+            .ann-item-name { font-weight: bold; color: #1a5276 !important; font-size: 10pt; margin-bottom: 3px; }
+            .ann-amount { font-size: 8.5pt; color: #555 !important; margin-bottom: 4px; }
+            .ann-remark {
+                font-size: 8.5pt;
+                font-style: italic;
+                background: #fff !important;
+                border: 1px solid #dde !important;
+                padding: 5px 9px;
+                margin-bottom: 6px;
+            }
+            .annexure-doc-img {
+                max-width: 100%;
+                max-height: 380px;
+                border: 1px solid #ccc !important;
+                margin-top: 6px;
+                display: block;
+                page-break-inside: avoid;
+            }
+
+            /* Hide UI chrome */
+            .app-header, .form-side, .card-header,
+            .btn, .toast, .placeholder-msg { display: none !important; }
+        }
     </style>
 </head>
 <body>
@@ -576,7 +1066,7 @@
     <div class="app-header">
         <span class="header-icon">📜</span>
         <h1>Net Worth Certificate Generator</h1>
-        <p>Generate professional net worth certificates & download as Word document</p>
+        <p>Generate professional net worth certificates & download as Word document or PDF</p>
     </div>
 
     <!-- ===== MAIN CONTAINER ===== -->
@@ -655,20 +1145,10 @@
                         <!-- TAB: ASSETS -->
                         <div id="tab-assets" class="tab-content">
                             <div class="form-section-title">Assets / Properties</div>
-                            <table class="dynamic-table" id="assetsTable">
-                                <thead>
-                                    <tr>
-                                        <th style="width:5%">#</th>
-                                        <th style="width:60%">Description of Asset</th>
-                                        <th style="width:25%">Amount (₹)</th>
-                                        <th style="width:10%"></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="assetsBody">
-                                    <!-- Dynamic rows -->
-                                </tbody>
-                            </table>
-                            <button class="btn-add" onclick="addAssetRow()">+ Add Asset Item</button>
+                            <div id="assetsGroupContainer">
+                                <!-- Groups rendered by JS -->
+                            </div>
+                            <button class="btn-add-group" onclick="addGroup('assets')">＋ Add Main Group</button>
                             <div class="total-row">
                                 <span>Total Assets</span>
                                 <span class="amount" id="totalAssetsDisplay">₹ 0.00</span>
@@ -678,20 +1158,10 @@
                         <!-- TAB: LIABILITIES -->
                         <div id="tab-liabilities" class="tab-content">
                             <div class="form-section-title">Liabilities / Loans</div>
-                            <table class="dynamic-table" id="liabilitiesTable">
-                                <thead>
-                                    <tr>
-                                        <th style="width:5%">#</th>
-                                        <th style="width:60%">Description of Liability</th>
-                                        <th style="width:25%">Amount (₹)</th>
-                                        <th style="width:10%"></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="liabilitiesBody">
-                                    <!-- Dynamic rows -->
-                                </tbody>
-                            </table>
-                            <button class="btn-add" onclick="addLiabilityRow()">+ Add Liability Item</button>
+                            <div id="liabilitiesGroupContainer">
+                                <!-- Groups rendered by JS -->
+                            </div>
+                            <button class="btn-add-group" onclick="addGroup('liabilities')">＋ Add Main Group</button>
                             <div class="total-row">
                                 <span>Total Liabilities</span>
                                 <span class="amount" id="totalLiabilitiesDisplay">₹ 0.00</span>
@@ -749,6 +1219,9 @@
                             <button class="btn btn-success" onclick="downloadWord()" id="downloadBtn" style="display:none;">
                                 📥 Download Word
                             </button>
+                            <button class="btn btn-pdf" onclick="downloadPDF()" id="downloadPdfBtn" style="display:none;">
+                                📄 Download PDF
+                            </button>
                             <button class="btn btn-outline" onclick="resetForm()">
                                 🔄 Reset
                             </button>
@@ -779,36 +1252,282 @@
     <!-- TOAST -->
     <div class="toast" id="toast">✅ Word document downloaded successfully!</div>
 
+    <!-- PRINT CONTAINER (hidden, populated on PDF export) -->
+    <div id="printContainer" style="display:none;"></div>
+
     <!-- ===== JAVASCRIPT ===== -->
     <script>
-        // ===== INITIALIZATION =====
-        let assetCounter = 0;
-        let liabilityCounter = 0;
+        // ===== STATE =====
+        // groups: { assets: [{id, name, items:[{id,name,amount}]}], liabilities: [...] }
+        let groupIdCounter = 0;
+        let itemIdCounter = 0;
 
-        // Set default date
+        const state = { assets: [], liabilities: [] };
+
+        // ===== INITIALIZATION =====
         document.getElementById('certDate').valueAsDate = new Date();
         document.getElementById('asOnDate').valueAsDate = new Date();
 
-        // Add default rows
-        const defaultAssets = [
-            'Immovable Property (Land & Building)',
-            'Fixed Deposits',
-            'Bank Balance (Savings / Current)',
-            'Investments (Shares / Mutual Funds)',
-            'Jewellery & Ornaments',
-            'Vehicles',
-            'Other Assets'
-        ];
-        const defaultLiabilities = [
-            'Home Loan',
-            'Personal Loan',
-            'Vehicle Loan',
-            'Credit Card Outstanding',
-            'Other Liabilities'
-        ];
+        // Default data
+        const defaultGroups = {
+            assets: [
+                { name: 'Immovable Properties', items: ['Land & Building', 'Plot / Agricultural Land'] },
+                { name: 'Financial Assets', items: ['Fixed Deposits', 'Bank Balance (Savings / Current)', 'Investments (Shares / Mutual Funds)'] },
+                { name: 'Movable Properties', items: ['Jewellery & Ornaments', 'Vehicles'] },
+                { name: 'Other Assets', items: ['Other Assets'] },
+            ],
+            liabilities: [
+                { name: 'Secured Loans', items: ['Home Loan', 'Vehicle Loan'] },
+                { name: 'Unsecured Loans', items: ['Personal Loan', 'Credit Card Outstanding'] },
+                { name: 'Other Liabilities', items: ['Other Liabilities'] },
+            ]
+        };
 
-        defaultAssets.forEach(a => addAssetRow(a));
-        defaultLiabilities.forEach(l => addLiabilityRow(l));
+        function initDefaults() {
+            ['assets', 'liabilities'].forEach(type => {
+                defaultGroups[type].forEach(g => {
+                    const gId = addGroup(type, g.name, false);
+                    g.items.forEach(itemName => addSubItem(type, gId, itemName, false));
+                });
+                renderGroups(type);
+            });
+        }
+
+        // ===== ADD GROUP =====
+        function addGroup(type, name = '', render = true) {
+            const id = ++groupIdCounter;
+            state[type].push({ id, name, items: [] });
+            if (render) renderGroups(type);
+            return id;
+        }
+
+        // ===== REMOVE GROUP =====
+        function removeGroup(type, gId) {
+            state[type] = state[type].filter(g => g.id !== gId);
+            renderGroups(type);
+        }
+
+        // ===== ADD SUBITEM =====
+        function addSubItem(type, gId, name = '', render = true) {
+            const group = state[type].find(g => g.id === gId);
+            if (!group) return;
+            const id = ++itemIdCounter;
+            group.items.push({ id, name, amount: '', remarks: '', files: [] });
+            if (render) renderGroups(type);
+            return id;
+        }
+
+        // ===== REMOVE SUBITEM =====
+        function removeSubItem(type, gId, itemId) {
+            const group = state[type].find(g => g.id === gId);
+            if (!group) return;
+            group.items = group.items.filter(i => i.id !== itemId);
+            renderGroups(type);
+        }
+
+        // ===== SYNC INPUT VALUES FROM DOM TO STATE (before re-render) =====
+        function syncState(type) {
+            const container = document.getElementById(type === 'assets' ? 'assetsGroupContainer' : 'liabilitiesGroupContainer');
+            state[type].forEach(group => {
+                const gEl = container.querySelector(`[data-gid="${group.id}"]`);
+                if (!gEl) return;
+                const nameEl = gEl.querySelector('.group-name-input');
+                if (nameEl) group.name = nameEl.value;
+                group.items.forEach(item => {
+                    const nameI    = gEl.querySelector(`[data-item-name="${item.id}"]`);
+                    const amtI     = gEl.querySelector(`[data-item-amt="${item.id}"]`);
+                    const remarkI  = gEl.querySelector(`[data-item-remark="${item.id}"]`);
+                    if (nameI)   item.name    = nameI.value;
+                    if (amtI)    item.amount  = amtI.value;
+                    if (remarkI) item.remarks = remarkI.value;
+                    // files are kept in state directly via onFileAdd/onFileRemove
+                });
+            });
+        }
+
+        // ===== RENDER GROUPS =====
+        function renderGroups(type) {
+            syncState(type);
+            const containerId = type === 'assets' ? 'assetsGroupContainer' : 'liabilitiesGroupContainer';
+            const container = document.getElementById(containerId);
+            const typeLabel = type === 'assets' ? 'Asset' : 'Liability';
+
+            container.innerHTML = state[type].map(group => {
+                const groupTotal = group.items.reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
+
+                const itemsHTML = group.items.map(item => {
+                    const hasRemarks = item.remarks || item.files.length > 0;
+                    const filesHTML  = item.files.map((f, fi) => `
+                        <span class="file-chip">
+                            ${f.type.startsWith('image/') ? '🖼️' : '📄'} ${escHtml(f.name)}
+                            <button class="chip-remove" onclick="onFileRemove('${type}',${group.id},${item.id},${fi})" title="Remove">×</button>
+                        </span>`).join('');
+
+                    return `
+                    <div class="subitem-wrapper" data-item-wrapper="${item.id}">
+                        <div class="subitem-main-row">
+                            <input type="text" data-item-name="${item.id}"
+                                   placeholder="${typeLabel} description"
+                                   value="${escHtml(item.name)}"
+                                   oninput="onItemNameChange('${type}',${group.id},${item.id},this.value)">
+                            <input type="number" data-item-amt="${item.id}"
+                                   placeholder="0.00" min="0" step="0.01"
+                                   value="${escHtml(item.amount)}"
+                                   oninput="onItemAmtChange('${type}',${group.id},${item.id},this.value)">
+                            <button class="btn-remove" onclick="removeSubItem('${type}',${group.id},${item.id})" title="Remove item">×</button>
+                            <button class="btn-toggle-remarks ${hasRemarks ? 'active' : ''}"
+                                    id="rtbtn-${item.id}"
+                                    onclick="toggleRemarks(${item.id})"
+                                    title="${hasRemarks ? 'Has remarks/docs' : 'Add remarks / documents'}">
+                                ${hasRemarks ? '📎' : '✎'}
+                            </button>
+                        </div>
+                        <div class="remarks-panel ${hasRemarks ? 'open' : ''}" id="rpanel-${item.id}">
+                            <label>📝 Remarks / Basis of Valuation</label>
+                            <textarea data-item-remark="${item.id}"
+                                      placeholder="e.g. Based on valuation report by XYZ Valuers dated 01-Jan-2025"
+                                      oninput="onRemarkChange('${type}',${group.id},${item.id},this.value)">${escHtml(item.remarks)}</textarea>
+                            <label>📎 Supporting Documents (JPG only)</label>
+                            <div class="upload-zone" title="Click or drag to upload">
+                                <input type="file" accept=".jpg,.jpeg,image/jpeg"
+                                       multiple
+                                       onchange="onFileAdd('${type}',${group.id},${item.id},this)">
+                                <div class="upload-label">
+                                    <span>Click to upload</span> or drag &amp; drop &nbsp;·&nbsp; JPG images only
+                                </div>
+                            </div>
+                            <div class="file-preview-list">${filesHTML}</div>
+                        </div>
+                    </div>`;
+                }).join('');
+
+                return `
+                <div class="group-block" data-gid="${group.id}">
+                    <div class="group-header">
+                        <input class="group-name-input" type="text"
+                               placeholder="Main Group Name (e.g. Immovable Properties)"
+                               value="${escHtml(group.name)}"
+                               oninput="onGroupNameChange('${type}',${group.id},this.value)">
+                        <span class="group-total-badge">₹ ${formatNumber(groupTotal)}</span>
+                    </div>
+                    <div class="group-body">
+                        <div class="subitem-col-header">
+                            <span>Description</span><span>Amount (₹)</span><span></span><span title="Remarks / Docs">📎</span>
+                        </div>
+                        ${itemsHTML}
+                    </div>
+                    <div class="group-footer">
+                        <button class="btn-add-sub" onclick="addSubItem('${type}',${group.id})">＋ Add Sub Item</button>
+                        <button class="btn-remove-group" onclick="removeGroup('${type}',${group.id})">✕ Remove Group</button>
+                    </div>
+                </div>`;
+            }).join('');
+
+            updateTotals();
+        }
+
+        // ===== TOGGLE REMARKS PANEL =====
+        function toggleRemarks(itemId) {
+            const panel = document.getElementById('rpanel-' + itemId);
+            const btn   = document.getElementById('rtbtn-' + itemId);
+            if (!panel) return;
+            panel.classList.toggle('open');
+            btn.classList.toggle('active', panel.classList.contains('open'));
+        }
+
+        // ===== REMARK CHANGE =====
+        function onRemarkChange(type, gId, itemId, val) {
+            const g = state[type].find(g => g.id === gId);
+            if (!g) return;
+            const i = g.items.find(i => i.id === itemId);
+            if (i) i.remarks = val;
+        }
+
+        // ===== FILE ADD =====
+        function onFileAdd(type, gId, itemId, inputEl) {
+            const g = state[type].find(g => g.id === gId);
+            if (!g) return;
+            const item = g.items.find(i => i.id === itemId);
+            if (!item) return;
+
+            const invalidFiles = Array.from(inputEl.files).filter(f => !f.type.match(/^image\/jpe?g$/i));
+            if (invalidFiles.length > 0) {
+                alert('Only JPG/JPEG images are allowed. Please select JPG files only.');
+                inputEl.value = '';
+                return;
+            }
+
+            Array.from(inputEl.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    item.files.push({ name: file.name, type: file.type, dataUrl: e.target.result });
+                    // Refresh just the file chip list
+                    const wrapper = document.querySelector(`[data-item-wrapper="${itemId}"]`);
+                    if (wrapper) {
+                        const list = wrapper.querySelector('.file-preview-list');
+                        if (list) list.innerHTML = item.files.map((f, fi) => `
+                            <span class="file-chip">
+                                ${f.type.startsWith('image/') ? '🖼️' : '📄'} ${escHtml(f.name)}
+                                <button class="chip-remove" onclick="onFileRemove('${type}',${gId},${itemId},${fi})" title="Remove">×</button>
+                            </span>`).join('');
+                        // mark btn active
+                        const btn = document.getElementById('rtbtn-' + itemId);
+                        if (btn) { btn.classList.add('active'); btn.textContent = '📎'; }
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+            inputEl.value = ''; // reset so same file can be re-added
+        }
+
+        // ===== FILE REMOVE =====
+        function onFileRemove(type, gId, itemId, fileIdx) {
+            const g = state[type].find(g => g.id === gId);
+            if (!g) return;
+            const item = g.items.find(i => i.id === itemId);
+            if (!item) return;
+            item.files.splice(fileIdx, 1);
+            renderGroups(type);
+        }
+
+        // Lightweight state updates without full re-render
+        function onGroupNameChange(type, gId, val) {
+            const g = state[type].find(g => g.id === gId);
+            if (g) g.name = val;
+        }
+        function onItemNameChange(type, gId, itemId, val) {
+            const g = state[type].find(g => g.id === gId);
+            if (g) { const i = g.items.find(i => i.id === itemId); if (i) i.name = val; }
+        }
+        function onItemAmtChange(type, gId, itemId, val) {
+            const g = state[type].find(g => g.id === gId);
+            if (g) {
+                const i = g.items.find(i => i.id === itemId);
+                if (i) { i.amount = val; }
+            }
+            // Update group badge without full re-render
+            const containerId = type === 'assets' ? 'assetsGroupContainer' : 'liabilitiesGroupContainer';
+            const gEl = document.getElementById(containerId).querySelector(`[data-gid="${gId}"]`);
+            if (gEl) {
+                const grp = state[type].find(g => g.id === gId);
+                const t = grp.items.reduce((s, it) => s + (parseFloat(it.amount) || 0), 0);
+                gEl.querySelector('.group-total-badge').textContent = '₹ ' + formatNumber(t);
+            }
+            updateTotals();
+        }
+
+        // ===== UPDATE TOTALS =====
+        function updateTotals() {
+            const assetTotal = state.assets.reduce((s, g) => s + g.items.reduce((ss, i) => ss + (parseFloat(i.amount)||0), 0), 0);
+            const liabTotal  = state.liabilities.reduce((s, g) => s + g.items.reduce((ss, i) => ss + (parseFloat(i.amount)||0), 0), 0);
+            document.getElementById('totalAssetsDisplay').textContent      = '₹ ' + formatNumber(assetTotal);
+            document.getElementById('totalLiabilitiesDisplay').textContent = '₹ ' + formatNumber(liabTotal);
+            return { assetTotal, liabTotal };
+        }
+
+        function escHtml(str) {
+            return String(str || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
 
         // ===== TAB SWITCHING =====
         function switchTab(tabName) {
@@ -816,60 +1535,6 @@
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('tab-' + tabName).classList.add('active');
             event.target.classList.add('active');
-        }
-
-        // ===== ADD ASSET ROW =====
-        function addAssetRow(defaultName = '') {
-            assetCounter++;
-            const row = document.createElement('tr');
-            row.id = 'assetRow' + assetCounter;
-            row.innerHTML = `
-                <td style="text-align:center;color:#999;font-size:0.8rem;">${assetCounter}</td>
-                <td><input type="text" class="asset-name" placeholder="Enter asset description" value="${defaultName}"></td>
-                <td><input type="number" class="asset-amount" placeholder="0.00" oninput="updateAssetTotal()"></td>
-                <td><button class="btn-remove" onclick="removeRow('assetRow${assetCounter}','asset')">×</button></td>
-            `;
-            document.getElementById('assetsBody').appendChild(row);
-        }
-
-        // ===== ADD LIABILITY ROW =====
-        function addLiabilityRow(defaultName = '') {
-            liabilityCounter++;
-            const row = document.createElement('tr');
-            row.id = 'liabRow' + liabilityCounter;
-            row.innerHTML = `
-                <td style="text-align:center;color:#999;font-size:0.8rem;">${liabilityCounter}</td>
-                <td><input type="text" class="liab-name" placeholder="Enter liability description" value="${defaultName}"></td>
-                <td><input type="number" class="liab-amount" placeholder="0.00" oninput="updateLiabilityTotal()"></td>
-                <td><button class="btn-remove" onclick="removeRow('liabRow${liabilityCounter}','liab')">×</button></td>
-            `;
-            document.getElementById('liabilitiesBody').appendChild(row);
-        }
-
-        // ===== REMOVE ROW =====
-        function removeRow(id, type) {
-            document.getElementById(id).remove();
-            if (type === 'asset') updateAssetTotal();
-            else updateLiabilityTotal();
-        }
-
-        // ===== UPDATE TOTALS =====
-        function updateAssetTotal() {
-            let total = 0;
-            document.querySelectorAll('.asset-amount').forEach(i => {
-                total += parseFloat(i.value) || 0;
-            });
-            document.getElementById('totalAssetsDisplay').textContent = '₹ ' + formatNumber(total);
-            return total;
-        }
-
-        function updateLiabilityTotal() {
-            let total = 0;
-            document.querySelectorAll('.liab-amount').forEach(i => {
-                total += parseFloat(i.value) || 0;
-            });
-            document.getElementById('totalLiabilitiesDisplay').textContent = '₹ ' + formatNumber(total);
-            return total;
         }
 
         // ===== FORMAT NUMBER =====
@@ -929,51 +1594,78 @@
                 certPlace: document.getElementById('certPlace').value || '________',
             };
 
-            // Gather assets
+            // Gather assets from grouped state
+            syncState('assets');
+            syncState('liabilities');
+
             let assets = [];
             let totalAssets = 0;
-            document.querySelectorAll('#assetsBody tr').forEach(row => {
-                const name = row.querySelector('.asset-name').value;
-                const amount = parseFloat(row.querySelector('.asset-amount').value) || 0;
-                if (name && amount > 0) {
-                    assets.push({ name, amount });
-                    totalAssets += amount;
+            state.assets.forEach(group => {
+                const groupItems = group.items.filter(i => i.name && parseFloat(i.amount) > 0);
+                if (groupItems.length > 0) {
+                    const groupTotal = groupItems.reduce((s, i) => s + parseFloat(i.amount), 0);
+                    assets.push({ isGroup: true, name: group.name || 'Unnamed Group', amount: groupTotal, items: groupItems });
+                    totalAssets += groupTotal;
                 }
             });
 
             // Gather liabilities
             let liabilities = [];
             let totalLiabilities = 0;
-            document.querySelectorAll('#liabilitiesBody tr').forEach(row => {
-                const name = row.querySelector('.liab-name').value;
-                const amount = parseFloat(row.querySelector('.liab-amount').value) || 0;
-                if (name && amount > 0) {
-                    liabilities.push({ name, amount });
-                    totalLiabilities += amount;
+            state.liabilities.forEach(group => {
+                const groupItems = group.items.filter(i => i.name && parseFloat(i.amount) > 0);
+                if (groupItems.length > 0) {
+                    const groupTotal = groupItems.reduce((s, i) => s + parseFloat(i.amount), 0);
+                    liabilities.push({ isGroup: true, name: group.name || 'Unnamed Group', amount: groupTotal, items: groupItems });
+                    totalLiabilities += groupTotal;
                 }
             });
 
             const netWorth = totalAssets - totalLiabilities;
 
-            // Build asset rows HTML
+            // Build asset rows HTML (grouped)
             let assetRowsHTML = '';
-            assets.forEach((a, i) => {
+            let assetItemNum = 1;
+            assets.forEach(group => {
                 assetRowsHTML += `
                     <tr>
-                        <td style="padding:9px 14px;border-bottom:1px solid #eee;">${i + 1}.</td>
-                        <td style="padding:9px 14px;border-bottom:1px solid #eee;">${a.name}</td>
-                        <td style="padding:9px 14px;border-bottom:1px solid #eee;text-align:right;font-weight:500;">₹ ${formatNumber(a.amount)}</td>
+                        <td colspan="3" style="padding:8px 14px;background:#eef5f9;font-weight:700;color:#1a5276;font-size:0.9em;text-transform:uppercase;letter-spacing:0.5px;">${group.name}</td>
+                    </tr>`;
+                group.items.forEach(item => {
+                    assetRowsHTML += `
+                    <tr>
+                        <td style="padding:7px 14px 7px 28px;border-bottom:1px solid #eee;color:#999;font-size:0.85em;">${assetItemNum++}.</td>
+                        <td style="padding:7px 14px 7px 10px;border-bottom:1px solid #eee;">${item.name}</td>
+                        <td style="padding:7px 14px;border-bottom:1px solid #eee;text-align:right;font-weight:500;">₹ ${formatNumber(parseFloat(item.amount))}</td>
+                    </tr>`;
+                });
+                assetRowsHTML += `
+                    <tr>
+                        <td colspan="2" style="padding:6px 14px;text-align:right;font-weight:600;font-size:0.88em;color:#555;">Sub-Total (${group.name}):</td>
+                        <td style="padding:6px 14px;text-align:right;font-weight:700;color:#1a5276;border-bottom:2px solid #dde;">₹ ${formatNumber(group.amount)}</td>
                     </tr>`;
             });
 
-            // Build liability rows HTML
+            // Build liability rows HTML (grouped)
             let liabRowsHTML = '';
-            liabilities.forEach((l, i) => {
+            let liabItemNum = 1;
+            liabilities.forEach(group => {
                 liabRowsHTML += `
                     <tr>
-                        <td style="padding:9px 14px;border-bottom:1px solid #eee;">${i + 1}.</td>
-                        <td style="padding:9px 14px;border-bottom:1px solid #eee;">${l.name}</td>
-                        <td style="padding:9px 14px;border-bottom:1px solid #eee;text-align:right;font-weight:500;">₹ ${formatNumber(l.amount)}</td>
+                        <td colspan="3" style="padding:8px 14px;background:#eef5f9;font-weight:700;color:#1a5276;font-size:0.9em;text-transform:uppercase;letter-spacing:0.5px;">${group.name}</td>
+                    </tr>`;
+                group.items.forEach(item => {
+                    liabRowsHTML += `
+                    <tr>
+                        <td style="padding:7px 14px 7px 28px;border-bottom:1px solid #eee;color:#999;font-size:0.85em;">${liabItemNum++}.</td>
+                        <td style="padding:7px 14px 7px 10px;border-bottom:1px solid #eee;">${item.name}</td>
+                        <td style="padding:7px 14px;border-bottom:1px solid #eee;text-align:right;font-weight:500;">₹ ${formatNumber(parseFloat(item.amount))}</td>
+                    </tr>`;
+                });
+                liabRowsHTML += `
+                    <tr>
+                        <td colspan="2" style="padding:6px 14px;text-align:right;font-weight:600;font-size:0.88em;color:#555;">Sub-Total (${group.name}):</td>
+                        <td style="padding:6px 14px;text-align:right;font-weight:700;color:#1a5276;border-bottom:2px solid #dde;">₹ ${formatNumber(group.amount)}</td>
                     </tr>`;
             });
 
@@ -1120,7 +1812,76 @@
             </div>`;
 
             document.getElementById('certificatePreview').innerHTML = certificateHTML;
+
+            // ===== BUILD ANNEXURE =====
+            // Collect all items that have remarks or files
+            const annexureItems = [];
+            let annexNum = 1;
+            ['assets','liabilities'].forEach(type => {
+                const label = type === 'assets' ? 'Assets' : 'Liabilities';
+                state[type].forEach(group => {
+                    group.items.forEach(item => {
+                        if (item.remarks || item.files.length > 0) {
+                            annexureItems.push({ num: annexNum++, type: label, group: group.name, item });
+                        }
+                    });
+                });
+            });
+
+            if (annexureItems.length > 0) {
+                let annexHTML = `
+                <div class="annexure-section" id="annexureContent">
+                    <div class="certificate" style="margin-top:0;padding-top:30px;">
+                        <div class="cert-border">
+                            <div class="annexure-title">Annexure — Supporting Remarks &amp; Documents</div>
+                            <div style="font-size:0.82rem;color:#555;font-family:'Inter',sans-serif;margin-bottom:18px;text-align:center;">
+                                <strong>Applicant:</strong> ${data.fullName} &nbsp;|&nbsp;
+                                <strong>Ref:</strong> ${data.refNo} &nbsp;|&nbsp;
+                                <strong>Date:</strong> ${formatDate(data.certDate)}
+                            </div>`;
+
+                annexureItems.forEach(entry => {
+                    const item = entry.item;
+                    const docsHTML = item.files.map(f => {
+                        if (f.type.startsWith('image/')) {
+                            return `<div style="margin-top:10px;">
+                                <div style="font-size:0.75rem;color:#888;margin-bottom:4px;">📎 ${escHtml(f.name)}</div>
+                                <img src="${f.dataUrl}" class="annexure-doc-img" alt="${escHtml(f.name)}">
+                            </div>`;
+                        } else {
+                            // PDF — embed as iframe for preview
+                            return `<div style="margin-top:10px;">
+                                <div style="font-size:0.75rem;color:#888;margin-bottom:4px;">📄 ${escHtml(f.name)}</div>
+                                <iframe src="${f.dataUrl}" style="width:100%;height:500px;border:1px solid #ccc;border-radius:6px;" title="${escHtml(f.name)}"></iframe>
+                            </div>`;
+                        }
+                    }).join('');
+
+                    annexHTML += `
+                    <div class="annexure-entry">
+                        <div class="ann-item-name">
+                            ${entry.num}. ${escHtml(item.name)}
+                            <span style="font-weight:400;font-size:0.8rem;color:#888;"> — ${entry.type} › ${escHtml(entry.group)}</span>
+                        </div>
+                        <div class="ann-amount">Declared Value: <strong>₹ ${formatNumber(parseFloat(item.amount)||0)}</strong></div>
+                        ${item.remarks ? `<div class="ann-remark">"${escHtml(item.remarks)}"</div>` : ''}
+                        ${docsHTML ? `<div class="ann-docs">${docsHTML}</div>` : ''}
+                    </div>`;
+                });
+
+                annexHTML += `
+                            <div style="margin-top:24px;font-size:0.75rem;color:#aaa;text-align:center;font-style:italic;font-family:'Inter',sans-serif;">
+                                — End of Annexure — This annexure forms part of the Net Worth Certificate —
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+                document.getElementById('certificatePreview').insertAdjacentHTML('beforeend', annexHTML);
+            }
+
             document.getElementById('downloadBtn').style.display = 'inline-flex';
+            document.getElementById('downloadPdfBtn').style.display = 'inline-flex';
         }
 
         // ===== DOWNLOAD AS WORD =====
@@ -1231,10 +1992,18 @@
                         .sig-name { font-weight: bold; color: #1a5276; }
                         .sig-detail { color: #666; font-size: 8pt; }
                         .cert-seal { text-align: center; margin-top: 15px; font-size: 8pt; color: #999; font-family: Arial, sans-serif; font-style: italic; }
+                        .annexure-section { page-break-before: always; }
+                        .annexure-title { text-align:center;font-size:13pt;font-weight:bold;color:#1a5276;text-transform:uppercase;letter-spacing:3px;padding:12px;border:2px solid #1a5276;background:#eef5f9;margin-bottom:16px; }
+                        .annexure-entry { margin-bottom:16px;padding:12px 16px;border-left:4px solid #2980b9;background:#fafcff; }
+                        .ann-item-name { font-weight:bold;color:#1a5276;font-size:10pt;margin-bottom:3px; }
+                        .ann-amount { font-size:9pt;color:#555;margin-bottom:5px; }
+                        .ann-remark { font-size:9pt;font-style:italic;background:#fff;border:1px solid #dde;padding:6px 10px;margin-bottom:6px; }
+                        .annexure-doc-img { max-width:100%;border:1px solid #ccc;margin-top:6px; }
                     </style>
                 </head>
                 <body>
                     ${certEl.outerHTML}
+                    ${document.getElementById('annexureContent') ? document.getElementById('annexureContent').outerHTML : ''}
                 </body>
                 </html>`;
 
@@ -1258,6 +2027,32 @@
             setTimeout(() => { toast.style.display = 'none'; }, 3000);
         }
 
+        // ===== DOWNLOAD AS PDF (native browser print — no external library) =====
+        function downloadPDF() {
+            const certEl = document.getElementById('certContent');
+            if (!certEl) { alert('Please generate the certificate first!'); return; }
+
+            // Populate the hidden print container with clones
+            const printContainer = document.getElementById('printContainer');
+            printContainer.innerHTML = '';
+            printContainer.appendChild(certEl.cloneNode(true));
+
+            // Clone annexure if present
+            const annEl = document.getElementById('annexureContent');
+            if (annEl) {
+                printContainer.appendChild(annEl.cloneNode(true));
+            }
+
+            // Show container (print CSS hides everything else)
+            printContainer.style.display = 'block';
+
+            // Trigger browser print dialog — user chooses "Save as PDF"
+            window.print();
+
+            // After dialog closes, hide container again
+            printContainer.style.display = 'none';
+        }
+
         // ===== RESET FORM =====
         function resetForm() {
             if (!confirm('Are you sure you want to reset all fields?')) return;
@@ -1266,10 +2061,12 @@
             document.getElementById('certDate').valueAsDate = new Date();
             document.getElementById('asOnDate').valueAsDate = new Date();
 
-            // Reset amounts
-            document.querySelectorAll('.asset-amount, .liab-amount').forEach(el => el.value = '');
-            updateAssetTotal();
-            updateLiabilityTotal();
+            // Reset groups
+            state.assets = [];
+            state.liabilities = [];
+            groupIdCounter = 0;
+            itemIdCounter = 0;
+            initDefaults();
 
             // Reset preview
             document.getElementById('certificatePreview').innerHTML = `
@@ -1278,6 +2075,7 @@
                     <p>Fill in the details and click <strong>"Generate Preview"</strong><br>to see your certificate here.</p>
                 </div>`;
             document.getElementById('downloadBtn').style.display = 'none';
+            document.getElementById('downloadPdfBtn').style.display = 'none';
 
             // Go to first tab
             switchTab('general');
@@ -1285,6 +2083,8 @@
                 b.classList.toggle('active', i === 0);
             });
         }
+        // ===== BOOT =====
+        initDefaults();
     </script>
 
 </body>
