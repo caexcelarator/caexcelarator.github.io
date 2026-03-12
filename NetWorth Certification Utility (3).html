@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Net Worth Certification Utility — CA Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+<style>
+/* ═══════════════════════════════════════════════
+   DESIGN SYSTEM — LEGAL ANTIQUARIAN
+   ═══════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink:        #1c1710;
+  --ink-mid:    #3d3328;
+  --ink-soft:   #6b5d4f;
+  --cream:      #faf8f3;
+  --cream-md:   #f2ede3;
+  --cream-dk:   #e8e0d0;
+  --gold:       #b89a30;
+  --gold-lt:    #d4b84a;
+  --gold-pale:  #f7f0d8;
+  --seal:       #8b1f1f;
+  --seal-pale:  #fff4f4;
+  --border:     #d6cab4;
+  --border-dk:  #b8a88a;
+  --white:      #ffffff;
+  --shadow-sm:  0 2px 12px rgba(28,23,16,.08);
+  --shadow-md:  0 6px 32px rgba(28,23,16,.13);
+  --shadow-lg:  0 16px 64px rgba(28,23,16,.18);
+  --radius:     2px;
+}
+
+html { font-size: 16px; scroll-behavior: smooth; }
+body {
+  font-family: 'Crimson Pro', Georgia, serif;
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+  line-height: 1.65;
+}
+
+/* ── UTILITY ── */
+.mono { font-family: 'DM Mono', monospace; }
+.hidden { display: none !important; }
+
+/* ══════════════════════════════
+   FORM SIDE
+══════════════════════════════ */
+#app-form {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.app-header {
+  background: var(--ink);
+  color: var(--cream);
+  padding: 0 40px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 3px solid var(--gold);
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+
+.app-header-left { display: flex; align-items: center; gap: 16px; }
+
+.header-badge {
+  background: var(--gold);
+  color: var(--ink);
+  font-family: 'DM Mono', monospace;
+  font-size: .62rem;
+  font-weight: 500;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 1px;
+}
+
+.header-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--gold-lt);
+  letter-spacing: .03em;
+}
+
+.header-sub {
+  font-family: 'DM Mono', monospace;
+  font-size: .6rem;
+  color: #8a7a68;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+
+.btn-preview {
+  background: var(--gold);
+  color: var(--ink);
+  border: none;
+  padding: 0 24px;
+  height: 38px;
+  font-family: 'DM Mono', monospace;
+  font-size: .72rem;
+  font-weight: 500;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background .2s, transform .1s;
+}
+.btn-preview:hover { background: var(--gold-lt); transform: translateY(-1px); }
+
+/* Form body */
+.form-body {
+  flex: 1;
+  max-width: 920px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 36px 24px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* Section card */
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.card-header {
+  background: var(--ink);
+  color: var(--gold-lt);
+  padding: 11px 22px;
+  font-family: 'DM Mono', monospace;
+  font-size: .68rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-body { padding: 22px; }
+
+/* Fields */
+.grid { display: grid; gap: 16px; }
+.g2 { grid-template-columns: 1fr 1fr; }
+.g3 { grid-template-columns: 1fr 1fr 1fr; }
+.g1 { grid-template-columns: 1fr; }
+
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label {
+  font-family: 'DM Mono', monospace;
+  font-size: .63rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.field label .req { color: var(--seal); }
+
+.field input, .field textarea, .field select {
+  border: 1px solid var(--border);
+  background: var(--cream);
+  padding: 8px 12px;
+  font-family: 'Crimson Pro', serif;
+  font-size: .95rem;
+  color: var(--ink);
+  border-radius: var(--radius);
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  width: 100%;
+}
+.field input:focus, .field textarea:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px var(--gold-pale);
+}
+.field textarea { resize: vertical; min-height: 68px; }
+.field input[type="date"] { font-family: 'DM Mono', monospace; font-size: .82rem; }
+.field input::placeholder, .field textarea::placeholder { color: #c0b098; }
+
+/* Groups */
+.group-list { display: flex; flex-direction: column; gap: 16px; }
+
+.group-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.group-head {
+  background: var(--cream-md);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.group-name {
+  flex: 1;
+  border: 1px solid transparent;
+  background: transparent;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink);
+  padding: 4px 8px;
+  border-radius: var(--radius);
+  outline: none;
+  transition: border-color .2s, background .2s;
+}
+.group-name:focus { border-color: var(--gold); background: var(--white); }
+
+.btn-icon {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 5px 7px;
+  cursor: pointer;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .18s;
+  line-height: 1;
+  font-size: 14px;
+}
+.btn-icon:hover { border-color: var(--seal); color: var(--seal); background: var(--seal-pale); }
+
+.group-items { padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; }
+
+.items-header {
+  display: grid;
+  grid-template-columns: 1fr 148px 34px;
+  gap: 8px;
+  padding: 0 0 4px;
+}
+.items-header span {
+  font-family: 'DM Mono', monospace;
+  font-size: .6rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.items-header span:nth-child(2) { text-align: right; }
+
+.item-row {
+  display: grid;
+  grid-template-columns: 1fr 148px 34px;
+  gap: 8px;
+  align-items: center;
+}
+.item-row input {
+  border: 1px solid var(--border);
+  background: var(--cream);
+  padding: 7px 10px;
+  font-family: 'Crimson Pro', serif;
+  font-size: .88rem;
+  color: var(--ink);
+  border-radius: var(--radius);
+  outline: none;
+  transition: border-color .18s;
+  width: 100%;
+}
+.item-row input:focus { border-color: var(--gold); }
+.item-row input.amt { text-align: right; font-family: 'DM Mono', monospace; font-size: .82rem; }
+
+.group-foot {
+  padding: 8px 14px;
+  background: var(--gold-pale);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  font-family: 'DM Mono', monospace;
+  font-size: .72rem;
+  color: var(--ink-mid);
+}
+
+.btn-add-item {
+  background: none;
+  border: 1px dashed var(--border-dk);
+  color: var(--ink-soft);
+  padding: 7px 12px;
+  font-family: 'DM Mono', monospace;
+  font-size: .65rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  transition: all .18s;
+  width: fit-content;
+}
+.btn-add-item:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-pale); }
+
+.btn-add-group {
+  background: none;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  padding: 9px 18px;
+  font-family: 'DM Mono', monospace;
+  font-size: .65rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all .18s;
+  width: fit-content;
+  margin-top: 4px;
+}
+.btn-add-group:hover { background: var(--gold-pale); }
+
+/* Net Worth Summary Bar */
+.nw-bar {
+  background: var(--ink);
+  border-radius: var(--radius);
+  padding: 20px 26px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+.nw-item { text-align: center; }
+.nw-item label {
+  font-family: 'DM Mono', monospace;
+  font-size: .6rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #8a7a68;
+  display: block;
+  margin-bottom: 5px;
+}
+.nw-val {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--gold-lt);
+}
+.nw-item.net .nw-val { color: #7ecfa0; }
+.nw-divider {
+  width: 1px;
+  background: #3a3028;
+  align-self: stretch;
+  justify-self: center;
+  display: none; /* using grid gap instead */
+}
+
+/* ══════════════════════════════
+   PREVIEW SIDE
+══════════════════════════════ */
+#app-preview { min-height: 100vh; display: flex; flex-direction: column; }
+
+.preview-bar {
+  background: var(--ink);
+  border-bottom: 2px solid var(--gold);
+  height: 56px;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+
+.preview-bar-left { display: flex; align-items: center; gap: 14px; }
+
+.btn-back {
+  background: none;
+  border: 1px solid #4a3f35;
+  color: var(--cream);
+  padding: 0 16px;
+  height: 34px;
+  font-family: 'DM Mono', monospace;
+  font-size: .65rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all .18s;
+}
+.btn-back:hover { border-color: var(--gold); color: var(--gold-lt); }
+
+.preview-label {
+  font-family: 'DM Mono', monospace;
+  font-size: .62rem;
+  color: #7a6a58;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.btn-export {
+  background: var(--gold);
+  color: var(--ink);
+  border: none;
+  padding: 0 22px;
+  height: 36px;
+  font-family: 'DM Mono', monospace;
+  font-size: .72rem;
+  font-weight: 500;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background .18s;
+}
+.btn-export:hover { background: var(--gold-lt); }
+
+.preview-canvas {
+  flex: 1;
+  background: #ddd8ce;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 32px 16px 80px;
+  overflow-x: hidden;
+}
+
+.cert-scaler {
+  transform: scale(var(--cert-scale, 1));
+  transform-origin: top center;
+  margin-bottom: calc((var(--cert-scale, 1) - 1) * 1123px);
+}
+
+/* ══════════════════════════════
+   CERTIFICATE (A4 preview)
+══════════════════════════════ */
+#certificate {
+  background: var(--white);
+  width: 794px;
+  min-height: 1123px;
+  box-shadow: var(--shadow-lg);
+  padding: 52px 58px 52px 58px;
+  font-family: 'Crimson Pro', Georgia, serif;
+  color: var(--ink);
+  position: relative;
+  font-size: 10pt;
+  line-height: 1.6;
+  box-sizing: border-box;
+}
+
+/* Double-rule outer border */
+#certificate::before {
+  content: '';
+  position: absolute;
+  inset: 16px;
+  border: 1px solid var(--border-dk);
+  pointer-events: none;
+}
+#certificate::after {
+  content: '';
+  position: absolute;
+  inset: 20px;
+  border: .5px solid var(--gold);
+  pointer-events: none;
+}
+
+/* Letterhead */
+.c-lh {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 18px;
+  border-bottom: 2px double var(--gold);
+  margin-bottom: 18px;
+  gap: 16px;
+}
+.c-lh > * { min-width: 0; }
+.c-firm {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 16pt;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: .01em;
+}
+.c-ca-name { font-size: 9pt; color: var(--ink-soft); margin-top: 3px; }
+.c-mship { font-family: 'DM Mono', monospace; font-size: 8pt; color: var(--ink-soft); margin-top: 2px; }
+.c-addr-block {
+  text-align: right;
+  font-size: 8pt;
+  color: var(--ink-soft);
+  max-width: 200px;
+  min-width: 0;
+  white-space: pre-line;
+  line-height: 1.5;
+  flex-shrink: 0;
+}
+
+/* Title */
+.c-title-block {
+  text-align: center;
+  padding: 12px 0;
+  border-top: .5px solid var(--border);
+  border-bottom: .5px solid var(--border);
+  margin-bottom: 18px;
+}
+.c-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 15pt;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.c-subtitle { font-size: 8.5pt; color: var(--ink-soft); font-style: italic; margin-top: 3px; }
+
+/* Body para */
+.c-para {
+  text-align: justify;
+  margin-bottom: 14px;
+  font-size: 9.5pt;
+  hyphens: auto;
+}
+
+/* Client box */
+.c-client-box {
+  background: var(--cream);
+  border: .5px solid var(--border);
+  border-left: 3px solid var(--gold);
+  padding: 12px 16px;
+  margin: 12px 0 18px;
+}
+.c-client-name { font-family: 'Cormorant Garamond', serif; font-size: 13pt; font-weight: 700; }
+.c-client-meta {
+  display: flex;
+  gap: 20px;
+  font-family: 'DM Mono', monospace;
+  font-size: 7.5pt;
+  color: var(--ink-soft);
+  margin-top: 4px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+.c-client-addr { font-size: 8pt; color: var(--ink-soft); margin-top: 4px; white-space: pre-line; }
+
+/* Section divider */
+.c-sec-div {
+  font-family: 'DM Mono', monospace;
+  font-size: 7pt;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  text-align: center;
+  padding: 10px 0 4px;
+}
+
+/* Statement table */
+.c-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9pt;
+  margin-bottom: 4px;
+}
+.c-table thead th {
+  background: var(--ink);
+  color: var(--gold-lt);
+  font-family: 'DM Mono', monospace;
+  font-size: 7pt;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  font-weight: 400;
+}
+.c-table thead th:last-child { text-align: right; }
+
+.c-table tr.tr-group td {
+  background: var(--cream-md);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 11pt;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-top: .5px solid var(--border-dk);
+}
+
+.c-table tr.tr-item td {
+  padding: 3px 10px 3px 24px;
+  border-bottom: .3px solid var(--cream-dk);
+  color: var(--ink-soft);
+  font-size: 8.5pt;
+}
+.c-table tr.tr-item td:last-child {
+  text-align: right;
+  font-family: 'DM Mono', monospace;
+  font-size: 8pt;
+}
+
+.c-table tr.tr-sub td {
+  background: var(--gold-pale);
+  padding: 4px 10px;
+  font-weight: 700;
+  font-size: 8.5pt;
+  border-top: .5px solid var(--border);
+}
+.c-table tr.tr-sub td:last-child {
+  text-align: right;
+  font-family: 'DM Mono', monospace;
+}
+
+.c-table tr.tr-total td {
+  background: var(--ink);
+  color: var(--gold-lt);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 11pt;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-top: 1px solid var(--gold);
+}
+.c-table tr.tr-total td:last-child {
+  text-align: right;
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5pt;
+}
+
+.c-table tr.tr-nw td {
+  background: #182818;
+  color: #7ecfa0;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13pt;
+  font-weight: 700;
+  padding: 8px 10px;
+  border-top: 2px double var(--gold);
+}
+.c-table tr.tr-nw td:last-child {
+  text-align: right;
+  font-family: 'DM Mono', monospace;
+  font-size: 11pt;
+}
+
+/* UDIN */
+.c-udin {
+  border: 1px solid var(--seal);
+  background: var(--seal-pale);
+  padding: 8px 14px;
+  margin: 14px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.c-udin-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 7pt;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--seal);
+  white-space: nowrap;
+}
+.c-udin-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5pt;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: .05em;
+}
+.c-udin-note {
+  margin-left: auto;
+  font-size: 7pt;
+  color: var(--seal);
+  font-family: 'DM Mono', monospace;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Disclaimer */
+.c-disclaimer {
+  border: .5px solid var(--border);
+  background: var(--cream);
+  padding: 10px 14px;
+  margin: 12px 0;
+  font-size: 7.5pt;
+  color: var(--ink-soft);
+  text-align: justify;
+  line-height: 1.5;
+}
+.c-dis-head {
+  font-family: 'DM Mono', monospace;
+  font-size: 6.5pt;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink-mid);
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+/* Signature */
+.c-sig-block {
+  margin-top: 28px;
+  display: flex;
+  justify-content: flex-end;
+}
+.c-sig-inner { text-align: center; min-width: 180px; }
+.c-sig-line {
+  border-bottom: .8px solid var(--ink);
+  height: 36px;
+  margin-bottom: 5px;
+}
+.c-sig-for { font-size: 8.5pt; color: var(--ink-soft); margin-bottom: 2px; }
+.c-sig-name { font-family: 'Cormorant Garamond', serif; font-size: 11pt; font-weight: 700; }
+.c-sig-meta { font-family: 'DM Mono', monospace; font-size: 7pt; color: var(--ink-soft); margin-top: 2px; }
+
+/* ── NW words line ── */
+.c-words { font-size: 8pt; font-style: italic; color: var(--ink-soft); margin: 4px 0 14px; }
+
+/* ══════════════════════════════
+   RESPONSIVE
+══════════════════════════════ */
+@media (max-width: 860px) {
+  .app-header { padding: 0 16px; }
+  .g2, .g3 { grid-template-columns: 1fr; }
+  .nw-bar { grid-template-columns: 1fr; }
+  /* Certificate uses CSS scale transform — no width override needed */
+  .preview-canvas { padding: 16px 8px 60px; }
+}
+
+@media print {
+  #app-form { display: none; }
+  #app-preview { display: block !important; }
+  .preview-bar { display: none; }
+  .preview-canvas { padding: 0; background: white; }
+  #certificate { box-shadow: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     FORM SCREEN
+══════════════════════════════════════════════ -->
+<div id="app-form">
+  <header class="app-header">
+    <div class="app-header-left">
+      <span class="header-badge">CA Tool</span>
+      <div>
+        <div class="header-title">Net Worth Certification Utility</div>
+        <div class="header-sub">ICAI Compliant · UDIN Mandatory · Export to PDF</div>
+      </div>
+    </div>
+    <button class="btn-preview" onclick="showPreview()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      Preview &amp; Export
+    </button>
+  </header>
+
+  <div class="form-body">
+
+    <!-- § 01 CLIENT -->
+    <div class="card">
+      <div class="card-header">§ 01 — Client Details</div>
+      <div class="card-body">
+        <div class="grid g2" style="margin-bottom:14px">
+          <div class="field">
+            <label>Full Name <span class="req">*</span></label>
+            <input id="c-name" type="text" placeholder="As per PAN Card" />
+          </div>
+          <div class="field">
+            <label>PAN <span class="req">*</span></label>
+            <input id="c-pan" type="text" placeholder="ABCDE1234F" maxlength="10"
+              oninput="this.value=this.value.toUpperCase()" />
+          </div>
+        </div>
+        <div class="grid g1" style="margin-bottom:14px">
+          <div class="field">
+            <label>Address</label>
+            <textarea id="c-addr" placeholder="Full residential / correspondence address" rows="2"></textarea>
+          </div>
+        </div>
+        <div class="grid g2">
+          <div class="field">
+            <label>Statement as on Date <span class="req">*</span></label>
+            <input id="c-date" type="date" />
+          </div>
+          <div class="field">
+            <label>Purpose of Certificate</label>
+            <input id="c-purpose" type="text" placeholder="e.g. Bank Loan, Visa Application" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- § 02 CA -->
+    <div class="card">
+      <div class="card-header">§ 02 — Chartered Accountant Details</div>
+      <div class="card-body">
+        <div class="grid g2" style="margin-bottom:14px">
+          <div class="field">
+            <label>CA Full Name <span class="req">*</span></label>
+            <input id="ca-name" type="text" placeholder="CA Full Name" />
+          </div>
+          <div class="field">
+            <label>Firm Name <span class="req">*</span></label>
+            <input id="ca-firm" type="text" placeholder="M/s. Firm Name & Co." />
+          </div>
+        </div>
+        <div class="grid g3" style="margin-bottom:14px">
+          <div class="field">
+            <label>ICAI Membership No. <span class="req">*</span></label>
+            <input id="ca-mno" type="text" placeholder="e.g. 123456" />
+          </div>
+          <div class="field">
+            <label>UDIN <span class="req">*</span></label>
+            <input id="ca-udin" type="text" placeholder="24XXXXXX..." />
+          </div>
+          <div class="field">
+            <label>Date of Certificate <span class="req">*</span></label>
+            <input id="ca-date" type="date" />
+          </div>
+        </div>
+        <div class="grid g1">
+          <div class="field">
+            <label>Firm / Office Address</label>
+            <textarea id="ca-addr" placeholder="Office address for letterhead" rows="2"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- § 03 ASSETS -->
+    <div class="card">
+      <div class="card-header">
+        <span>§ 03 — Assets</span>
+        <span id="total-assets-badge" style="font-size:.65rem;color:var(--gold-lt)">Total: ₹ 0.00</span>
+      </div>
+      <div class="card-body">
+        <div class="group-list" id="asset-groups"></div>
+        <button class="btn-add-group" onclick="addGroup('asset')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Asset Group
+        </button>
+      </div>
+    </div>
+
+    <!-- § 04 LIABILITIES -->
+    <div class="card">
+      <div class="card-header">
+        <span>§ 04 — Liabilities</span>
+        <span id="total-liab-badge" style="font-size:.65rem;color:var(--gold-lt)">Total: ₹ 0.00</span>
+      </div>
+      <div class="card-body">
+        <div class="group-list" id="liab-groups"></div>
+        <button class="btn-add-group" onclick="addGroup('liab')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Liability Group
+        </button>
+      </div>
+    </div>
+
+    <!-- NET WORTH BAR -->
+    <div class="nw-bar">
+      <div class="nw-item">
+        <label>Total Assets (A)</label>
+        <div class="nw-val" id="bar-assets">₹ 0.00</div>
+      </div>
+      <div class="nw-item">
+        <label>Total Liabilities (B)</label>
+        <div class="nw-val" id="bar-liab">₹ 0.00</div>
+      </div>
+      <div class="nw-item net">
+        <label>Net Worth (A − B)</label>
+        <div class="nw-val" id="bar-nw">₹ 0.00</div>
+      </div>
+    </div>
+
+  </div><!-- /form-body -->
+</div><!-- /app-form -->
+
+
+<!-- ══════════════════════════════════════════════
+     PREVIEW SCREEN
+══════════════════════════════════════════════ -->
+<div id="app-preview" class="hidden">
+  <div class="preview-bar">
+    <div class="preview-bar-left">
+      <button class="btn-back" onclick="showForm()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Edit
+      </button>
+      <span class="preview-label">Certificate Preview</span>
+    </div>
+    <button class="btn-export" onclick="exportPDF()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export PDF
+    </button>
+  </div>
+
+  <div class="preview-canvas">
+    <div class="cert-scaler">
+    <div id="certificate">
+      <!-- Rendered by JS -->
+    </div>
+    </div><!-- /cert-scaler -->
+  </div><!-- /preview-canvas -->
+</div><!-- /app-preview -->
+
+<script>
+/* ══════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════ */
+let assetGroups = [];
+let liabGroups  = [];
+let gid = 0;
+let iid = 0;
+
+/* ══════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', () => {
+  // Set today as default dates
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('c-date').value  = today;
+  document.getElementById('ca-date').value = today;
+
+  // Seed default groups
+  addGroup('asset', 'Immovable Assets');
+  addGroup('asset', 'Movable Assets');
+  addGroup('asset', 'Financial Assets');
+  addGroup('liab',  'Secured Liabilities');
+  addGroup('liab',  'Unsecured Liabilities');
+});
+
+/* ══════════════════════════════════════════════
+   GROUP / ITEM MANAGEMENT
+══════════════════════════════════════════════ */
+function newId() { return ++gid; }
+function newIid() { return ++iid; }
+
+function addGroup(type, name = '') {
+  const id = newId();
+  const arr = type === 'asset' ? assetGroups : liabGroups;
+  const group = { id, type, name, items: [{ id: newIid(), desc: '', val: '' }] };
+  arr.push(group);
+  renderGroups(type);
+  recalc();
+}
+
+function removeGroup(type, id) {
+  if (type === 'asset') assetGroups = assetGroups.filter(g => g.id !== id);
+  else liabGroups = liabGroups.filter(g => g.id !== id);
+  renderGroups(type);
+  recalc();
+}
+
+function addItem(type, gid) {
+  const arr = type === 'asset' ? assetGroups : liabGroups;
+  const g = arr.find(g => g.id === gid);
+  if (g) { g.items.push({ id: newIid(), desc: '', val: '' }); renderGroups(type); recalc(); }
+}
+
+function removeItem(type, gid, iid) {
+  const arr = type === 'asset' ? assetGroups : liabGroups;
+  const g = arr.find(g => g.id === gid);
+  if (g && g.items.length > 1) { g.items = g.items.filter(i => i.id !== iid); renderGroups(type); recalc(); }
+}
+
+function syncGroupName(type, gid, val) {
+  const arr = type === 'asset' ? assetGroups : liabGroups;
+  const g = arr.find(g => g.id === gid);
+  if (g) g.name = val;
+}
+
+function syncItem(type, gid, iid, field, val) {
+  const arr = type === 'asset' ? assetGroups : liabGroups;
+  const g = arr.find(g => g.id === gid);
+  if (g) { const item = g.items.find(i => i.id === iid); if (item) item[field] = val; }
+  recalc();
+}
+
+/* ══════════════════════════════════════════════
+   RENDER GROUPS
+══════════════════════════════════════════════ */
+function renderGroups(type) {
+  const container = document.getElementById(type === 'asset' ? 'asset-groups' : 'liab-groups');
+  const arr = type === 'asset' ? assetGroups : liabGroups;
+  container.innerHTML = '';
+
+  arr.forEach(g => {
+    const sub = groupSubtotal(g);
+    const div = document.createElement('div');
+    div.className = 'group-card';
+    div.innerHTML = `
+      <div class="group-head">
+        <input class="group-name" value="${esc(g.name)}" placeholder="${type === 'asset' ? 'Asset' : 'Liability'} Group Name"
+          oninput="syncGroupName('${type}', ${g.id}, this.value)" />
+        <button class="btn-icon" onclick="removeGroup('${type}', ${g.id})" title="Remove group">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+            <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+          </svg>
+        </button>
+      </div>
+      <div class="group-items">
+        <div class="items-header"><span>Description</span><span>Amount (₹)</span><span></span></div>
+        ${g.items.map(item => `
+          <div class="item-row">
+            <input type="text" value="${esc(item.desc)}" placeholder="Description of item..."
+              oninput="syncItem('${type}', ${g.id}, ${item.id}, 'desc', this.value)" />
+            <input type="text" class="amt" value="${esc(item.val)}" placeholder="0.00"
+              oninput="syncItem('${type}', ${g.id}, ${item.id}, 'val', this.value)" />
+            <button class="btn-icon" onclick="removeItem('${type}', ${g.id}, ${item.id})" ${g.items.length === 1 ? 'disabled' : ''}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+        `).join('')}
+        <button class="btn-add-item" onclick="addItem('${type}', ${g.id})">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Item
+        </button>
+      </div>
+      <div class="group-foot">
+        <span>Subtotal — ${esc(g.name) || 'Group'}</span>
+        <span>${fmtINR(sub)}</span>
+      </div>`;
+    container.appendChild(div);
+  });
+}
+
+/* ══════════════════════════════════════════════
+   CALCULATIONS
+══════════════════════════════════════════════ */
+function parseVal(v) { const n = parseFloat(String(v || '').replace(/,/g, '')); return isNaN(n) ? 0 : n; }
+function groupSubtotal(g) { return g.items.reduce((s, i) => s + parseVal(i.val), 0); }
+function sectionTotal(arr) { return arr.reduce((s, g) => s + groupSubtotal(g), 0); }
+
+function fmtINR(n) {
+  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2 }).format(n);
+}
+
+function recalc() {
+  const ta = sectionTotal(assetGroups);
+  const tl = sectionTotal(liabGroups);
+  const nw = ta - tl;
+  document.getElementById('bar-assets').textContent = fmtINR(ta);
+  document.getElementById('bar-liab').textContent   = fmtINR(tl);
+  document.getElementById('bar-nw').textContent     = fmtINR(nw);
+  document.getElementById('total-assets-badge').textContent = 'Total: ' + fmtINR(ta);
+  document.getElementById('total-liab-badge').textContent   = 'Total: ' + fmtINR(tl);
+}
+
+function fmtDate(d) {
+  if (!d) return '';
+  const dt = new Date(d + 'T00:00:00');
+  return dt.toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
+}
+
+function amountWords(n) {
+  n = Math.abs(n);
+  if (n === 0) return 'Zero';
+  const ones = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten',
+    'Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+  const tens = ['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+  function w(num) {
+    if (!num) return '';
+    if (num < 20) return ones[num] + ' ';
+    if (num < 100) return tens[Math.floor(num/10)] + (num%10 ? ' ' + ones[num%10] : '') + ' ';
+    return ones[Math.floor(num/100)] + ' Hundred ' + w(num % 100);
+  }
+  const cr = Math.floor(n / 1e7), lk = Math.floor((n % 1e7)/1e5),
+        th = Math.floor((n % 1e5)/1e3), rest = Math.floor(n % 1e3);
+  const ps = Math.round((n - Math.floor(n)) * 100);
+  let r = '';
+  if (cr)   r += w(cr) + 'Crore ';
+  if (lk)   r += w(lk) + 'Lakh ';
+  if (th)   r += w(th) + 'Thousand ';
+  if (rest) r += w(rest);
+  r = r.trim();
+  if (ps) r += ' and ' + w(ps).trim() + ' Paise';
+  return r.trim() + ' Only';
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ══════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════ */
+function scaleCertificate() {
+  var canvas  = document.querySelector('.preview-canvas');
+  var scaler  = document.querySelector('.cert-scaler');
+  if (!canvas || !scaler) return;
+  var available = canvas.clientWidth - 32; // 16px padding each side
+  var certW     = 794;
+  var scale     = Math.min(1, available / certW);
+  scaler.style.setProperty('--cert-scale', scale);
+  // collapse extra vertical space when scaled down
+  var certH = document.getElementById('certificate').offsetHeight || 1123;
+  scaler.style.marginBottom = ((scale - 1) * certH) + 'px';
+}
+
+function showPreview() {
+  buildCertificate();
+  document.getElementById('app-form').classList.add('hidden');
+  document.getElementById('app-preview').classList.remove('hidden');
+  window.scrollTo(0, 0);
+  // slight delay lets the DOM paint before measuring
+  setTimeout(scaleCertificate, 50);
+}
+
+window.addEventListener('resize', function() {
+  if (!document.getElementById('app-preview').classList.contains('hidden')) {
+    scaleCertificate();
+  }
+});
+
+function showForm() {
+  document.getElementById('app-preview').classList.add('hidden');
+  document.getElementById('app-form').classList.remove('hidden');
+  window.scrollTo(0,0);
+}
+
+/* ══════════════════════════════════════════════
+   CERTIFICATE BUILDER (HTML preview)
+══════════════════════════════════════════════ */
+function getData() {
+  return {
+    cName    : document.getElementById('c-name').value.trim(),
+    cPan     : document.getElementById('c-pan').value.trim(),
+    cAddr    : document.getElementById('c-addr').value.trim(),
+    cDate    : document.getElementById('c-date').value,
+    cPurpose : document.getElementById('c-purpose').value.trim(),
+    caName   : document.getElementById('ca-name').value.trim(),
+    caFirm   : document.getElementById('ca-firm').value.trim(),
+    caMno    : document.getElementById('ca-mno').value.trim(),
+    caUdin   : document.getElementById('ca-udin').value.trim(),
+    caDate   : document.getElementById('ca-date').value,
+    caAddr   : document.getElementById('ca-addr').value.trim(),
+  };
+}
+
+function buildTableRows(groups) {
+  let html = '';
+  groups.forEach(g => {
+    html += `<tr class="tr-group"><td colspan="2">${esc(g.name)}</td></tr>`;
+    g.items.forEach(item => {
+      if (item.desc || item.val) {
+        html += `<tr class="tr-item"><td>${esc(item.desc) || '—'}</td><td>${fmtINR(parseVal(item.val))}</td></tr>`;
+      }
+    });
+    html += `<tr class="tr-sub"><td>Subtotal — ${esc(g.name)}</td><td>${fmtINR(groupSubtotal(g))}</td></tr>`;
+  });
+  return html;
+}
+
+function buildCertificate() {
+  const d  = getData();
+  const ta = sectionTotal(assetGroups);
+  const tl = sectionTotal(liabGroups);
+  const nw = ta - tl;
+  const cert = document.getElementById('certificate');
+  const purposeNote = d.cPurpose ? ` for the purpose of <strong>${esc(d.cPurpose)}</strong>` : '';
+
+  cert.innerHTML = `
+    <!-- LETTERHEAD -->
+    <div class="c-lh">
+      <div>
+        <div class="c-firm">${esc(d.caFirm) || 'M/s. Firm Name &amp; Co.'}</div>
+        <div class="c-ca-name">CA ${esc(d.caName) || 'Chartered Accountant'}</div>
+        <div class="c-mship">Membership No. ${esc(d.caMno) || 'XXXXXX'}</div>
+      </div>
+      <div class="c-addr-block">${esc(d.caAddr) || 'Office Address\nCity – PIN'}</div>
+    </div>
+
+    <!-- TITLE -->
+    <div class="c-title-block">
+      <div class="c-title">Net Worth Certificate</div>
+      <div class="c-subtitle">Statement of Assets &amp; Liabilities — Certified by Practising Chartered Accountant</div>
+    </div>
+
+    <!-- BODY -->
+    <p class="c-para">
+      This is to certify that to the best of our knowledge and belief, based on the information and
+      explanations furnished by the client and the documents, records and books of account produced
+      before us for our verification, the <strong>Net Worth</strong> of the individual mentioned
+      hereunder has been ascertained as on <strong>${fmtDate(d.cDate)}</strong>${purposeNote}.
+    </p>
+
+    <!-- CLIENT BOX -->
+    <div class="c-client-box">
+      <div class="c-client-name">${esc(d.cName) || 'Name of Client'}</div>
+      <div class="c-client-meta">
+        <span>PAN: ${esc(d.cPan) || 'N/A'}</span>
+        <span>Statement as on: ${fmtDate(d.cDate)}</span>
+      </div>
+      ${d.cAddr ? `<div class="c-client-addr">${esc(d.cAddr)}</div>` : ''}
+    </div>
+
+    <!-- ASSETS TABLE -->
+    <div class="c-sec-div">— A. Assets —</div>
+    <table class="c-table">
+      <thead><tr><th style="width:66%">A. ASSETS</th><th style="width:34%">Amount (₹)</th></tr></thead>
+      <tbody>
+        ${buildTableRows(assetGroups)}
+        <tr class="tr-total"><td>TOTAL ASSETS (A)</td><td>${fmtINR(ta)}</td></tr>
+      </tbody>
+    </table>
+
+    <!-- LIABILITIES TABLE -->
+    <div class="c-sec-div" style="padding-top:16px">— B. Liabilities —</div>
+    <table class="c-table">
+      <thead><tr><th style="width:66%">B. LIABILITIES</th><th style="width:34%">Amount (₹)</th></tr></thead>
+      <tbody>
+        ${buildTableRows(liabGroups)}
+        <tr class="tr-total"><td>TOTAL LIABILITIES (B)</td><td>${fmtINR(tl)}</td></tr>
+      </tbody>
+    </table>
+
+    <!-- NET WORTH ROW -->
+    <table class="c-table" style="margin-top:4px">
+      <tbody>
+        <tr class="tr-nw">
+          <td style="width:66%">NET WORTH (A − B)</td>
+          <td style="width:34%">${fmtINR(nw)}</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="c-words">(Rupees ${amountWords(nw)})</div>
+
+    <!-- CERTIFICATION TEXT -->
+    <p class="c-para">
+      We have verified the above statement based on the documents produced to us and hereby certify
+      that the Net Worth of <strong>${esc(d.cName) || '____________________'}</strong> as on
+      <strong>${fmtDate(d.cDate)}</strong> is <strong>${fmtINR(nw)}</strong>
+      (Rupees ${amountWords(nw)}).
+    </p>
+    <p class="c-para">
+      This certificate is issued at the specific request of the client and should not be construed
+      as an audit certificate. The figures represent the client's best estimate and declaration. We
+      have not carried out an audit and have relied on the information provided to us by the client.
+    </p>
+
+    <!-- UDIN -->
+    <div class="c-udin">
+      <span class="c-udin-tag">UDIN</span>
+      <span class="c-udin-val">${esc(d.caUdin) || '— NOT PROVIDED —'}</span>
+      <span class="c-udin-note">Unique Document Identification Number<br/>Mandatory — ICAI Circular</span>
+    </div>
+
+    <!-- DISCLAIMER -->
+    <div class="c-disclaimer">
+      <div class="c-dis-head">Disclaimer &amp; Limitation of Scope</div>
+      This certificate has been prepared solely for the purpose for which it has been requested and
+      should not be used for any other purpose. It is based on information and documents provided by
+      the client and has not been independently verified by us unless expressly stated. ICAI guidelines
+      and professional standards have been adhered to in the preparation of this certificate. This
+      certificate does not constitute a valuation report and is not intended to be relied upon for
+      investment, legal, or credit decisions. The accuracy of the information is the sole responsibility
+      of the client. We do not accept any liability to any third party for any loss or damage arising
+      from reliance on this certificate, whether such error or omission results from negligence,
+      accident or any other cause whatsoever.
+    </div>
+
+    <!-- SIGNATURE -->
+    <div class="c-sig-block">
+      <div class="c-sig-inner">
+        <div class="c-sig-line"></div>
+        <div class="c-sig-for">For</div>
+        <div class="c-sig-name">${esc(d.caFirm) || 'Firm Name'}</div>
+        <div class="c-sig-meta">CA ${esc(d.caName) || 'Chartered Accountant'}</div>
+        <div class="c-sig-meta">M. No. ${esc(d.caMno) || 'XXXXXX'}</div>
+        <div class="c-sig-meta">Date: ${fmtDate(d.caDate)}</div>
+        <div class="c-sig-meta">UDIN: ${esc(d.caUdin) || 'N/A'}</div>
+      </div>
+    </div>
+  `;
+}
+
+/* ══════════════════════════════════════════════
+   PDF EXPORT
+══════════════════════════════════════════════ */
+
+// ── PDF-safe Indian number formatter ──
+// jsPDF built-in fonts (helvetica/courier/times) cannot render the Unicode
+// rupee symbol (Rs.). Using "Rs." prefix avoids the garbled superscript-1 bug.
+function pdfINR(n) {
+  n = parseVal(n);
+  var neg   = n < 0;
+  var abs   = Math.abs(n).toFixed(2);
+  var parts = abs.split('.');
+  var s = parts[0];
+  // Indian grouping: rightmost 3 digits, then pairs
+  if (s.length > 3) {
+    var last3   = s.slice(-3);
+    var rest    = s.slice(0, -3);
+    var grouped = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
+    s = grouped + ',' + last3;
+  }
+  return (neg ? '-' : '') + 'Rs. ' + s + '.' + parts[1];
+}
+
+function exportPDF() {
+  var J   = window.jspdf;
+  var pdf = new J.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  var d   = getData();
+  var ta  = sectionTotal(assetGroups);
+  var tl  = sectionTotal(liabGroups);
+  var nw  = ta - tl;
+  var W   = 210, ml = 16, mr = 16, cw = W - ml - mr;
+  var y   = 16;
+
+  // colour arrays
+  var INK   = [28,  23,  16];
+  var GOLD  = [184, 154, 48];
+  var SOFT  = [107, 93,  79];
+  var CREAM = [250, 248, 243];
+  var GREEN = [20,  48,  20];
+  var GTEXT = [120, 210, 155];
+  var RED   = [139, 31,  31];
+
+  // strip non-latin characters (prevents garbled glyphs in jsPDF)
+  function safe(s) { return (s || '').replace(/[^\x00-\xFF]/g, ''); }
+
+  function ln(x1, y1, x2, y2, col, lw) {
+    col = col || GOLD; lw = lw || 0.3;
+    pdf.setDrawColor(col[0], col[1], col[2]);
+    pdf.setLineWidth(lw);
+    pdf.line(x1, y1, x2, y2);
+  }
+
+  function tx(str, x, yy, opts) {
+    var o     = opts || {};
+    str       = safe(str);
+    pdf.setFontSize(o.sz    || 9);
+    pdf.setFont(o.font      || 'helvetica', o.style || 'normal');
+    var c = o.col || INK;
+    pdf.setTextColor(c[0], c[1], c[2]);
+    var a = o.align || 'left';
+    if      (a === 'right')  pdf.text(str, x, yy, { align: 'right'  });
+    else if (a === 'center') pdf.text(str, x, yy, { align: 'center' });
+    else                     pdf.text(str, x, yy);
+  }
+
+  function box(x, yy, w, h, fill, stroke, lw) {
+    lw = lw || 0.3;
+    pdf.setLineWidth(lw);
+    var mode = 'S';
+    if (fill && stroke) {
+      pdf.setFillColor(fill[0], fill[1], fill[2]);
+      pdf.setDrawColor(stroke[0], stroke[1], stroke[2]);
+      mode = 'FD';
+    } else if (fill) {
+      pdf.setFillColor(fill[0], fill[1], fill[2]);
+      mode = 'F';
+    } else if (stroke) {
+      pdf.setDrawColor(stroke[0], stroke[1], stroke[2]);
+      mode = 'S';
+    }
+    pdf.rect(x, yy, w, h, mode);
+  }
+
+  // ── decorative border ──
+  box(ml - 6, 10, cw + 12, 276, null, [180, 160, 110], 0.5);
+  ln(ml - 4, 12.5, W - mr + 4, 12.5, GOLD, 0.3);
+  ln(ml - 4, 284,  W - mr + 4, 284,  GOLD, 0.3);
+
+  // ══ LETTERHEAD ══
+  tx(d.caFirm || 'M/s. Firm Name & Co.', ml, y, { sz: 13, style: 'bold' });
+  y += 5;
+  tx('CA ' + (d.caName || 'Chartered Accountant'), ml, y, { sz: 8.5, col: SOFT });
+  y += 4;
+  tx('Membership No. ' + (d.caMno || 'XXXXXX'), ml, y, { sz: 7.5, font: 'courier', col: SOFT });
+
+  // CA address — right side
+  var alines = (d.caAddr || '').split('\n');
+  var ay = 16;
+  alines.forEach(function(al) {
+    tx(al.trim(), W - mr, ay, { sz: 7.5, align: 'right', col: SOFT });
+    ay += 3.8;
+  });
+
+  y = Math.max(y + 5, ay + 4);
+  ln(ml, y, W - mr, y, GOLD, 0.8);
+  ln(ml, y + 1, W - mr, y + 1, GOLD, 0.25);
+  y += 6;
+
+  // ══ TITLE ══
+  tx('NET WORTH CERTIFICATE', W / 2, y, { sz: 13, style: 'bold', align: 'center' });
+  y += 5;
+  tx('Statement of Assets & Liabilities  |  Certified by Practising Chartered Accountant',
+     W / 2, y, { sz: 7.5, style: 'italic', align: 'center', col: SOFT });
+  y += 4;
+  ln(ml + 14, y, W - mr - 14, y, [210, 192, 155], 0.3);
+  y += 6;
+
+  // ══ INTRO PARAGRAPH ══
+  var intro = 'This is to certify that to the best of our knowledge and belief, based on the ' +
+    'information and explanations furnished by the client and documents produced for our ' +
+    'verification, the Net Worth of the individual mentioned hereunder has been ascertained ' +
+    'as on ' + fmtDate(d.cDate) + '.';
+  var introLines = pdf.splitTextToSize(intro, cw);
+  pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5);
+  pdf.setTextColor(INK[0], INK[1], INK[2]);
+  pdf.text(introLines, ml, y);
+  y += introLines.length * 4.5 + 4;
+
+  // ══ CLIENT BOX ══
+  var cbH = d.cAddr ? 26 : 20;
+  box(ml, y, cw, cbH, CREAM, [210, 192, 155]);
+  box(ml, y, 2.5, cbH, GOLD);
+  var cy = y + 5;
+  tx(d.cName || 'Client Name', ml + 6, cy, { sz: 11, style: 'bold' });
+  cy += 5.5;
+  tx('PAN:  ' + (d.cPan || 'N/A'), ml + 6, cy, { sz: 7.5, font: 'courier', col: SOFT });
+  tx('As on:  ' + fmtDate(d.cDate), W - mr - 3, cy, { sz: 7.5, align: 'right', col: SOFT });
+  if (d.cAddr) {
+    cy += 4;
+    var addrStr = 'Address: ' + d.cAddr.replace(/\n/g, ', ');
+    var addrWrap = pdf.splitTextToSize(addrStr, cw - 12);
+    pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7);
+    pdf.setTextColor(SOFT[0], SOFT[1], SOFT[2]);
+    pdf.text(addrWrap, ml + 6, cy);
+  }
+  y += cbH + 5;
+
+  // ══ TABLE BUILDER ══
+  var col0w = Math.round(cw * 0.63);
+  var col1w = cw - col0w;
+
+  var HS = { fillColor: INK, textColor: GOLD, fontStyle: 'bold', fontSize: 8 };
+  var headL = Object.assign({}, HS, { halign: 'left',
+    cellPadding: { top: 4, bottom: 4, left: 5, right: 4 } });
+  var headR = Object.assign({}, HS, { halign: 'right',
+    cellPadding: { top: 4, bottom: 4, left: 4, right: 6 } });
+
+  function buildBody(groups) {
+    var rows = [];
+    groups.forEach(function(g) {
+      // Group header
+      rows.push([{
+        content: safe(g.name || 'Group'), colSpan: 2,
+        styles: { fontStyle: 'bold', fontSize: 9, fillColor: [238, 229, 215],
+                  textColor: INK, cellPadding: { top: 3.5, bottom: 3.5, left: 5, right: 5 } }
+      }]);
+      // Items
+      g.items.forEach(function(it) {
+        if (it.desc || it.val) {
+          rows.push([
+            { content: safe(it.desc || '-'),
+              styles: { fontSize: 8, textColor: SOFT,
+                        cellPadding: { top: 2.5, bottom: 2.5, left: 14, right: 4 } }
+            },
+            { content: pdfINR(parseVal(it.val)),
+              styles: { halign: 'right', fontSize: 8, font: 'courier', textColor: INK,
+                        cellPadding: { top: 2.5, bottom: 2.5, left: 4, right: 6 } }
+            }
+          ]);
+        }
+      });
+      // Subtotal
+      var sub = groupSubtotal(g);
+      rows.push([
+        { content: 'Subtotal  ' + safe(g.name || 'Group'),
+          styles: { fontStyle: 'bold', fontSize: 8, fillColor: [247, 239, 212],
+                    textColor: INK, cellPadding: { top: 3, bottom: 3, left: 5, right: 4 } }
+        },
+        { content: pdfINR(sub),
+          styles: { halign: 'right', fontStyle: 'bold', fontSize: 8, font: 'courier',
+                    fillColor: [247, 239, 212], textColor: INK,
+                    cellPadding: { top: 3, bottom: 3, left: 4, right: 6 } }
+        }
+      ]);
+    });
+    return rows;
+  }
+
+  // ══ ASSETS TABLE ══
+  pdf.autoTable({
+    startY: y,
+    head: [[ { content: 'A.  ASSETS', styles: headL },
+             { content: 'Amount (Rs.)', styles: headR } ]],
+    body: buildBody(assetGroups).concat([[
+      { content: 'TOTAL ASSETS  (A)',
+        styles: { fontStyle: 'bold', fontSize: 10, fillColor: INK, textColor: GOLD,
+                  cellPadding: { top: 4.5, bottom: 4.5, left: 5, right: 4 } }
+      },
+      { content: pdfINR(ta),
+        styles: { halign: 'right', fontStyle: 'bold', fontSize: 9.5, font: 'courier',
+                  fillColor: INK, textColor: GOLD,
+                  cellPadding: { top: 4.5, bottom: 4.5, left: 4, right: 6 } }
+      }
+    ]]),
+    theme: 'plain',
+    styles: { lineColor: [214, 200, 175], lineWidth: 0.2, overflow: 'linebreak' },
+    columnStyles: { 0: { cellWidth: col0w }, 1: { cellWidth: col1w } },
+    margin: { left: ml, right: mr }, tableWidth: cw,
+  });
+  y = pdf.lastAutoTable.finalY + 5;
+
+  // ══ LIABILITIES TABLE ══
+  pdf.autoTable({
+    startY: y,
+    head: [[ { content: 'B.  LIABILITIES', styles: headL },
+             { content: 'Amount (Rs.)', styles: headR } ]],
+    body: buildBody(liabGroups).concat([[
+      { content: 'TOTAL LIABILITIES  (B)',
+        styles: { fontStyle: 'bold', fontSize: 10, fillColor: INK, textColor: GOLD,
+                  cellPadding: { top: 4.5, bottom: 4.5, left: 5, right: 4 } }
+      },
+      { content: pdfINR(tl),
+        styles: { halign: 'right', fontStyle: 'bold', fontSize: 9.5, font: 'courier',
+                  fillColor: INK, textColor: GOLD,
+                  cellPadding: { top: 4.5, bottom: 4.5, left: 4, right: 6 } }
+      }
+    ]]),
+    theme: 'plain',
+    styles: { lineColor: [214, 200, 175], lineWidth: 0.2, overflow: 'linebreak' },
+    columnStyles: { 0: { cellWidth: col0w }, 1: { cellWidth: col1w } },
+    margin: { left: ml, right: mr }, tableWidth: cw,
+  });
+  y = pdf.lastAutoTable.finalY + 3;
+
+  // ══ NET WORTH ROW ══
+  box(ml, y, cw, 14, GREEN);
+  tx('NET WORTH  (A - B)', ml + 5, y + 9, { sz: 11, style: 'bold', col: GTEXT });
+  tx(pdfINR(nw), W - mr - 6, y + 9, { sz: 11, style: 'bold', align: 'right', font: 'courier', col: GTEXT });
+  y += 17;
+  tx('(' + amountWords(nw) + ')', ml, y, { sz: 7.5, style: 'italic', col: SOFT });
+  y += 8;
+
+  // ══ CERTIFICATION PARA ══
+  var certPara = 'We have verified the above statement based on documents produced to us and hereby ' +
+    'certify that the Net Worth of ' + safe(d.cName || '__________') + ' as on ' +
+    fmtDate(d.cDate) + ' is ' + pdfINR(nw) + ' (' + amountWords(nw) + ').';
+  var cLines = pdf.splitTextToSize(certPara, cw);
+  pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5);
+  pdf.setTextColor(INK[0], INK[1], INK[2]);
+  pdf.text(cLines, ml, y);
+  y += cLines.length * 4.4 + 3;
+
+  var scopePara = 'This certificate is issued at the specific request of the client and should not ' +
+    'be construed as an audit certificate. The figures represent the client\'s best estimate and ' +
+    'declaration. We have not carried out an audit and have relied on the information provided.';
+  var sLines = pdf.splitTextToSize(scopePara, cw);
+  pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8);
+  pdf.setTextColor(SOFT[0], SOFT[1], SOFT[2]);
+  pdf.text(sLines, ml, y);
+  y += sLines.length * 4.2 + 5;
+
+  // ══ UDIN BOX ══
+  box(ml, y, cw, 13, [255, 244, 244], RED, 0.6);
+  tx('UDIN :', ml + 5, y + 5.5, { sz: 8, font: 'courier', style: 'bold', col: RED });
+  tx(safe(d.caUdin) || 'NOT PROVIDED', ml + 25, y + 5.5, { sz: 9.5, font: 'courier', style: 'bold', col: INK });
+  tx('Unique Document Identification Number  |  ICAI Mandatory', W - mr - 5, y + 10,
+     { sz: 6, align: 'right', col: RED });
+  y += 16;
+
+  // ══ DISCLAIMER BOX ══
+  var dis = 'DISCLAIMER & LIMITATION OF SCOPE:  This certificate has been prepared solely for ' +
+    'the purpose for which it has been requested and should not be used for any other purpose. ' +
+    'It is based on information provided by the client and has not been independently verified ' +
+    'unless expressly stated. ICAI professional standards have been adhered to. This certificate ' +
+    'does not constitute a valuation report and must not be relied upon for investment, legal, or ' +
+    'credit decisions. We do not accept liability to any third party for any loss or damage arising ' +
+    'from reliance on this certificate.';
+  var dLines = pdf.splitTextToSize(dis, cw - 10);
+  var dH = dLines.length * 3.5 + 10;
+  box(ml, y, cw, dH, CREAM, [210, 192, 155]);
+  pdf.setFont('helvetica', 'normal'); pdf.setFontSize(6.5);
+  pdf.setTextColor(SOFT[0], SOFT[1], SOFT[2]);
+  pdf.text(dLines, ml + 5, y + 6);
+  y += dH + 7;
+
+  // ══ SIGNATURE BLOCK ══
+  var sx = W - mr - 65;
+  tx('For', sx, y, { sz: 8, col: SOFT });
+  tx(safe(d.caFirm) || 'Firm Name', sx, y + 5, { sz: 10, style: 'bold' });
+  y += 22;
+  ln(sx, y, W - mr, y, INK, 0.7);
+  y += 5;
+  tx('CA ' + (safe(d.caName) || 'Chartered Accountant'), sx, y, { sz: 9, style: 'bold' });
+  y += 5;
+  tx('Membership No. ' + (safe(d.caMno) || 'N/A'), sx, y, { sz: 7.5, font: 'courier', col: SOFT });
+  y += 4;
+  tx('Date: ' + fmtDate(d.caDate), sx, y, { sz: 7.5, col: SOFT });
+  y += 4;
+  tx('UDIN: ' + (safe(d.caUdin) || 'N/A'), sx, y, { sz: 7, font: 'courier', col: SOFT });
+
+  // ══ SAVE FILE ══
+  var fname = 'NetWorth_' +
+    (d.cName || 'Certificate').replace(/[^a-z0-9]/gi, '_') +
+    '_' + (d.cDate || 'date') + '.pdf';
+  pdf.save(fname);
+}
+</script>
+</body>
+</html>
